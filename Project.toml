@@ -1,0 +1,13 @@
+name = "Replication_Monge_et_al_2019"
+uuid = "ffe97925-9d9a-4d1f-8763-112399b03670"
+authors = ["Paulogcd <gugelmopaulo@gmail.com> and contributors"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1.11.2"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
