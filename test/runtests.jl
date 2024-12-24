@@ -6,4 +6,5 @@ using Test
     
     # Test of testing :
     @test 1 == 1
+    @test addition(1,2) == 3
 end
