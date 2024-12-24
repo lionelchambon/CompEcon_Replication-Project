@@ -15,7 +15,7 @@ test_function() = print("Hello world")
 """
 This function adds two numbers.
 """
-addition(x,y) = x+y
+addition(x::Number,y::Number) = x + y
 
 # We can also include other code files with the include function : 
 include("Data_work.jl")
