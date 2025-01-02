@@ -3,3 +3,4 @@
 *.jl.mem
 /docs/Manifest.toml
 /docs/build/
+monge_et_al_2019.pdf

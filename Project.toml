@@ -3,7 +3,15 @@ uuid = "ffe97925-9d9a-4d1f-8763-112399b03670"
 authors = ["Paulogcd <gugelmopaulo@gmail.com> and contributors"]
 version = "1.0.0-DEV"
 
+[deps]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+StatFiles = "1463e38c-9381-5320-bcd4-4134955f093a"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+
 [compat]
+DataFrames = "1.7.0"
+StatFiles = "0.8.0"
+Statistics = "1.11.1"
 julia = "1.11.2"
 
 [extras]
