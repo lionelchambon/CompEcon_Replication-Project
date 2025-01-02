@@ -15,7 +15,7 @@ data_2000 = DataFrame(data[data.year .== 2000, :])
 # data_2000
 
 # The authors use a sample of 79 and 76 countries, detailed in the appendix.
-# To reconstruct the same, we create array :
+# To reconstruct the same, we first create an array of 79 countries, used for benchmark in the article : 
 
 benchmark_79 = [
     
@@ -110,7 +110,7 @@ benchmark_79 = [
     "United States",
     "Canada"]
 
-# The authors exlude three countries, because these countries do not have data on human capital, to create a set of 76 countries :  
+# The authors exlude three countries, because these countries do not have data on human capital, to create another set of 76 countries :  
 to_exclude = ["Burkina Faso", "Nigeria", "Oman"]
 benchmark_76 = filter(e->e ∉ to_exclude,benchmark_79)
 
@@ -134,6 +134,10 @@ sample_79 = isin(data_2000[:,"country"], benchmark_79)
 
 data_76 = data_2000[sample_76,:]
 data_79 = data_2000[sample_79,:]
+
+# Testing that we have all the selected countries for the samples of 76 and 79 countries : 
+sum(isin(benchmark_76,data_2000[:,"country"])) == 76
+sum(isin(benchmark_79,data_2000[:,"country"])) == 79
 
 # Then, we compute the statistics of each variable for the sample of 79 countries : 
 
@@ -187,4 +191,6 @@ Table_1 = DataFrame(
     "Correlation with per capita output" => Corr
 )
 
-Table_1
+# Then, we should save this Table 1 in the 'output' folder. 
+
+# Table 2 : (...)
