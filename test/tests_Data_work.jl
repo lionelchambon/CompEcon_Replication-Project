@@ -10,5 +10,7 @@ using Test
     @test ismissing(Replication_Monge_et_al_2019.filter_function!(-100))
     @test ismissing(Replication_Monge_et_al_2019.filter_function!("this is a string"))
 
+    # At the end, we would have something like : 
+    # @test isequal(our_data, their_data)
 
 end

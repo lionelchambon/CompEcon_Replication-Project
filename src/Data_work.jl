@@ -63,9 +63,16 @@ pwt_data[!, :pl_gdpo] = filter_function!.(pwt_data[!, :pl_gdpo])
 # To obtain the number of missing observations in pl_gdpe and pl_gdpo in Stata, we do : 
 ### count if missing(pl_gdpe) # 2080
 ### count if missing(pl_gdpo) # 2086
-count(ismissing, pwt_data[!, :pl_gdpe]) == 2080 
-count(ismissing, pwt_data[!, :pl_gdpo]) == 2086 
-size(pwt_data) == initial_size # DC
+if count(ismissing, pwt_data[!, :pl_gdpe]) !== 2080
+    @error("Wrong number of missing observations in pl_gdpe.")
+end
+if count(ismissing, pwt_data[!, :pl_gdpo]) !== 2086 
+    @error("Wrong number of missing observations in pl_gdpo.")
+end
+# DC
+if size(pwt_data) !== initial_size
+    @error("Error in the data frame dimensions.")
+end
 
 
 
@@ -92,8 +99,9 @@ pwt_data = transform(pwt_data, :nom_p => maximum => :nom_pp)
 pwt_data[!, :pl_gdpo_old] .= pwt_data.pl_gdpo ./ pwt_data.nom_pp 
 
 # Checking by comparing the obtained value with the one the authors get :
-mean(skipmissing(pwt_data[!,:pl_gdpo_old])) ≈ .7216124
-
+if mean(skipmissing(pwt_data.pl_gdpo_old)) ≉ .7216124
+    @error("Error in the creation of the variable pl_gdpe_old.")
+end
 
 
 # The authors then generate the pl_gdpe_old variable.
@@ -114,7 +122,10 @@ pwt_data = groupby(pwt_data, :year)
 pwt_data = transform(pwt_data, :nom_p => maximum => :nom_pp)
 pwt_data[!, :pl_gdpe_old] .= pwt_data.pl_gdpe ./ pwt_data.nom_pp
 # Checking by comparing the obtained value with the one the authors get :
-mean(skipmissing(pwt_data.pl_gdpe_old)) ≈ .7002738
+if mean(skipmissing(pwt_data.pl_gdpe_old)) ≉ .7002738
+    @error("Error in the creation of the variable pl_gdpe_old.")
+end
+
 
 # Remark 1 of the authors : 
 # We multiply nominal GDP by 1,000,000 to transform GDP 
@@ -135,23 +146,30 @@ minyear = 1970
 maxyear = 2010
 pwt_data[!, :country] .= replace.(pwt_data.country, "Cote d`Ivoire" => "Cote dIvoire")
 
+
+
 # ###############################################
 # # (1) Merge with timber_and_subsoil_rents.dta #
 # ###############################################
-# 
-# sort!(pwt_data, [:country, :year])
-# # using DataFrames, StatFiles
-# 
-# timber_data = DataFrame(load("src/data/timber_and_subsoil_rent_input.dta")) # Load the .dta file
-# 
-# pwt_data = outerjoin(pwt_data, timber_data, on=[:country, :year], makeunique=true) # Merge with the main DataFrame
-# 
-# pwt_data = filter(row -> row.year >= minyear && row.year < maxyear, pwt_data) # Filter rows based on the year range
-# 
-# rename!(pwt_data, :forest => :timber) # Rename column `forest` to `timber`
-# 
-# 
-# 
+
+# They do : 
+### codebook country	
+### sort country year
+### merge 1:1 country year using "timber_and_subsoil_rent_input.dta"
+### 
+### keep if year>=minyear & year<maxyear 
+
+sort!(pwt_data, [:country, :year])
+
+# We moad the .dta file
+timber_data = DataFrame(load("src/data/timber_and_subsoil_rent_input.dta")) 
+# We merge with the main DataFrame
+pwt_data = outerjoin(pwt_data, timber_data, on=[:country, :year], makeunique=true) 
+# We filter rows based on the year range
+pwt_data = filter(row -> row.year >= minyear && row.year < maxyear, pwt_data)
+# We rename column `forest` to `timber`
+rename!(pwt_data, :forest => :timber) 
+
 # ####
 # # COMPUTE TIMBER AND SUBSOIL RENTS AS SHARE OF GDP
 # 
@@ -375,4 +393,8 @@ pwt_data[!, :country] .= replace.(pwt_data.country, "Cote d`Ivoire" => "Cote dIv
 # 
 # # Save DataFrame to a CSV file
 # # CSV.write("pwt_data.csv", pwt_data)
-# 
+
+
+# function create_data()
+#     ...
+# end

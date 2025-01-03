@@ -10,3 +10,4 @@ This repository is dedicated to the replication of the article _Natural Resource
 
 We are COMPÉRAT Étienne, CHAMBON Lionel, and GUGELMO CAVALHEIRO DIAS Paulo, and this replication package is done for the *Computational Economics* Class, taught by Florian Oswald during the Fall 2024 semester in the Sciences Po Master of Research in Economics. 
 
+You can go to its dedicated webpage [here](https://www.paulogcd.com/Replication_Monge_et_al_2019.jl/) to have a better overview of the package. 
