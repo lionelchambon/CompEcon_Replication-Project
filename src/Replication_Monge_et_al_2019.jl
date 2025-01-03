@@ -24,7 +24,12 @@ include("Part_2.jl")
 # Replicating the results of the fourth part of the article : 
 # include("Results_part_4.jl")
 
+# The function run() should call all the necessary functions to get the results : 
+# function run()
+    # ...
+# end
+
 # We can make the functions available by using the export function to export only the chosen ones.
-# export
+# export run
 
 end

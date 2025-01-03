@@ -1,11 +1,9 @@
 # This file is dedicated to the replication of the data of the article. 
 # It uses data provided by the authors of the article, stored in the "data" folder. 
 
-
 # This file is an attempt to reproduce the "build_phiNR.do" file provided in the replication package of the authors in Julia.
 
 # Note of the article's authors : 
-
     # This do file constructs natural resource shares (phi_NR) as in MSS by calling data from the
     # WB and PWT. As an output it will save a dataset that has phi_NR for multiple countries between 
     # 1970 and 2005. User must set the directory before use. 
@@ -15,79 +13,128 @@
     #   3) crop_land_rent_input.dta
     #   4) pasture_land_rent_input.dta
 
+# Note of the replicators : 
+    # At almost each step, we write the Stata code used by the authors after "They do" and three '#' signs.
+    # We will then proceed to explain step by step the functions used in Julia. 
+    # Any created function is tested in the "tests_Data_work.jl" file, in the "test" folder.
+
 using DataFrames
 using StatFiles
 using Missings
 using CSV
+using Statistics
 
-# # Load the dataset of the Penn World Tables (pwt) :
-# pwt_data = DataFrame(load("src/data/pwt80.dta"))
-# 
-# 
-# # We first work with pl_gdpe and pl_gdpo.
-# # pl_gdpe is the price level of CGDPe (Expenditure-side real GDP at current PPPs (in mil. 2005US$)) (PPP/XR), price level of USA GDP_e in 2005 = 1
-# # pl_gdpo is the price level of CGDPo (Output-side real GDP at current PPPs (in mil. 2005US$)) (PPP/XR), price level of USA GDP_o in 2005 = 1
-# 
-# # We want to replace negative values with 'missing' : 
-# pwt_data[!, :pl_gdpe] .= passmissing(x -> ifelse(x < 0, missing, x)).(pwt_data[!, :pl_gdpe]) # No country
-# pwt_data[!, :pl_gdpo] .= passmissing(x -> ifelse(x < 0, missing, x)).(pwt_data[!, :pl_gdpo]) # This happens in Bermuda
-# 
-# # ifelse does not support handling missing values directly because it expect to evaluate a Bool.
-# # To fix this, we have used passmissing which skips computations for missing values and directly propagates them in the result.
-# 
-# # Checking:
-# count(ismissing, pwt_data[!, :pl_gdpe]) #2080
-# count(ismissing, pwt_data[!, :pl_gdpo]) #2086 
-# # These numbers match those from the do file.
-# 
-# 
-# # Generate pl_gdpo_old
-# usa_data = filter(row -> row[:countrycode] == "USA", pwt_data) # Filter rows where countrycode is "USA"
-# usa_nom_p = combine(groupby(filter(row -> row[:countrycode] == "USA", pwt_data), :year), 
-#                     :pl_gdpo => maximum => :nom_p) # Group by year and calculate the max value for pl_gdpo
-# pwt_data = leftjoin(pwt_data, usa_nom_p, on=:year) # Merge the results back into the original dataset
-# pwt_data = groupby(pwt_data, :year) # Group by year
-# pwt_data = transform(pwt_data, :nom_p => maximum => :nom_pp) #This line seems redundant but we prefer following the structure of the .do file
-# pwt_data[!, :pl_gdpo_old] .= pwt_data.pl_gdpo ./ pwt_data.nom_pp 
-# #Checking
-# sort!(pwt_data, [:year])
-# first(select(pwt_data, [:countrycode, :year, :pl_gdpo_old]), 10) # The numbers for pl_gdpo_old match.
-# 
-# # Generate pl_gdpe_old
-# select!(pwt_data, Not([:nom_p, :nom_pp])) # Drop nom_p and nom_pp
-# # Filter for USA and compute max(pl_gdpe) by year
-# usa_nom_p = combine(groupby(filter(row -> row[:countrycode] == "USA", pwt_data), :year), 
-#                     :pl_gdpe => maximum => :nom_p)
-# pwt_data = leftjoin(pwt_data, usa_nom_p, on=:year)
-# pwt_data = groupby(pwt_data, :year)
-# pwt_data = transform(pwt_data, :nom_p => maximum => :nom_pp)
-# pwt_data[!, :pl_gdpe_old] .= pwt_data.pl_gdpe ./ pwt_data.nom_pp
-# # Checking
-# first(select(pwt_data, [:countrycode, :year, :pl_gdpe_old]), 10) # The numbers match.
-# 
-# 
-# # Remark 1.
-# # We multiply nominal GDP by 1,000,000 to transform GDP 
-# #   in the same units as rents from natural resources (from "natural_rents.dta")
-# # Create new columns for nominal_gdpe and nominal_gdpo
-# pwt_data[!, :nominal_gdpe] .= pwt_data.cgdpe .* 1_000_000 .* pwt_data.pl_gdpe_old
-# pwt_data[!, :nominal_gdpo] .= pwt_data.cgdpo .* 1_000_000 .* pwt_data.pl_gdpo_old
-# 
-# # Create a new column nominal_gdp based on nominal_gdpo
-# pwt_data[!, :nominal_gdp] .= pwt_data.nominal_gdpo
-# 
-# # Define scalar variables for sample years
-# minyear = 1970
-# maxyear = 2010
-# 
-# # We need to do this replacement here regarding the name of Cote d'Ivoire 
-# #   because of the d`Ivorie in the original PWT
-# pwt_data[!, :country] .= replace.(pwt_data.country, "Cote d`Ivoire" => "Cote dIvoire")
-# 
-# 
-# 
-# 
-# 
+# Load the dataset of the Penn World Tables (pwt) :
+pwt_data = DataFrame(load("src/data/pwt80.dta"))
+# We save the dimensions for later checks : 
+initial_size = size(pwt_data)
+# We will regularly proceed to Dimension Checks, referred as "DC".
+ 
+
+
+# We first work with pl_gdpe and pl_gdpo.
+# pl_gdpe is the price level of Expenditure-side real GDP at current PPPs (in mil. 2005US$).
+# pl_gdpo is the price level of Output-side real GDP at current PPPs (in mil. 2005US$).
+# The authors replace negative values of those variables with 'missing'.
+
+# They do : 
+### replace pl_gdpe=. if pl_gdpe<0 /* No country */
+### replace pl_gdpo=. if pl_gdpo<0 /*This happens in Bermuda*/
+
+# For us to do so, we create a function that takes any negative value and replace it by 'missing'
+function filter_function!(x)
+    if x isa Number
+        if x < 0 
+            x = missing
+        else
+            x = x
+        end
+    else
+        x = missing
+    end
+    return x
+end
+
+# We then broadcast the function on the pl_gdpe and pl_gdpo columns of the data frame :
+pwt_data[!, :pl_gdpe] = filter_function!.(pwt_data[!, :pl_gdpe])
+pwt_data[!, :pl_gdpo] = filter_function!.(pwt_data[!, :pl_gdpo])
+
+# We can then check that the number of missing observations are the same as in the original do file : 
+# To obtain the number of missing observations in pl_gdpe and pl_gdpo in Stata, we do : 
+### count if missing(pl_gdpe) # 2080
+### count if missing(pl_gdpo) # 2086
+count(ismissing, pwt_data[!, :pl_gdpe]) == 2080 
+count(ismissing, pwt_data[!, :pl_gdpo]) == 2086 
+size(pwt_data) == initial_size # DC
+
+
+
+# The authors then generate the pl_gdpo_old variable, equal to the ratio of `pl_gdp` over `nom_pp` for the USA.
+
+# They do : 
+### bys year: egen nom_p=max(pl_gdpo) if countrycode=="USA"
+### bys year: egen nom_pp=max(nom_p)
+### gen pl_gdpo_old = pl_gdpo/nom_pp
+
+# For us to do so, we first separate the data of the USA :
+usa_data = pwt_data[pwt_data[!,:countrycode] .== "USA", :] 
+size(usa_data)[2] == initial_size[2] # DC
+# We group by year and calculate the max value for pl_gdpo
+usa_nom_p = combine(groupby(filter(row -> row[:countrycode] == "USA", pwt_data), :year), 
+                    :pl_gdpo => maximum => :nom_p) 
+# We merge the results back into the original dataset : 
+pwt_data = leftjoin(pwt_data, usa_nom_p, on=:year, makeunique=true) 
+# We group by year :
+pwt_data = groupby(pwt_data, :year)
+# This line seems redundant but we prefer following the logic of the do file
+pwt_data = transform(pwt_data, :nom_p => maximum => :nom_pp)
+# We finally generate the variable : 
+pwt_data[!, :pl_gdpo_old] .= pwt_data.pl_gdpo ./ pwt_data.nom_pp 
+
+# Checking by comparing the obtained value with the one the authors get :
+mean(skipmissing(pwt_data[!,:pl_gdpo_old])) ≈ .7216124
+
+
+
+# The authors then generate the pl_gdpe_old variable.
+
+# They do : 
+### drop nom_p nom_pp
+### bys year: egen nom_p=max(pl_gdpe) if countrycode=="USA"
+### bys year: egen nom_pp=max(nom_p)
+### gen pl_gdpe_old = pl_gdpe/nom_pp
+
+# Drop nom_p and nom_pp :
+select!(pwt_data, Not([:nom_p, :nom_pp])) 
+# Filter for USA and compute max(pl_gdpe) by year
+usa_nom_p = combine(groupby(filter(row -> row[:countrycode] == "USA", pwt_data), :year), 
+                    :pl_gdpe => maximum => :nom_p)
+pwt_data = leftjoin(pwt_data, usa_nom_p, on=:year)
+pwt_data = groupby(pwt_data, :year)
+pwt_data = transform(pwt_data, :nom_p => maximum => :nom_pp)
+pwt_data[!, :pl_gdpe_old] .= pwt_data.pl_gdpe ./ pwt_data.nom_pp
+# Checking by comparing the obtained value with the one the authors get :
+mean(skipmissing(pwt_data.pl_gdpe_old)) ≈ .7002738
+
+# Remark 1 of the authors : 
+# We multiply nominal GDP by 1,000,000 to transform GDP 
+#   in the same units as rents from natural resources (from "natural_rents.dta")
+
+# They do : 
+
+### gen nominal_gdpe = (cgdpe)*1000000*pl_gdpe_old
+### gen nominal_gdpo = (cgdpo)*1000000*pl_gdpo_old
+
+# To create new columns for nominal_gdpe and nominal_gdpo, we can do :
+pwt_data[!, :nominal_gdpe] .= pwt_data.cgdpe .* 1_000_000 .* pwt_data.pl_gdpe_old
+pwt_data[!, :nominal_gdpo] .= pwt_data.cgdpo .* 1_000_000 .* pwt_data.pl_gdpo_old
+
+# Also, they do the equivalent of :
+pwt_data[!, :nominal_gdp] .= pwt_data.nominal_gdpo
+minyear = 1970
+maxyear = 2010
+pwt_data[!, :country] .= replace.(pwt_data.country, "Cote d`Ivoire" => "Cote dIvoire")
+
 # ###############################################
 # # (1) Merge with timber_and_subsoil_rents.dta #
 # ###############################################
