@@ -1,4 +1,4 @@
-# This file is dedicated to replicate the results of the part 2 of the article.
+# This file is dedicated to replicate the results of Part 2 in the article. ###################################################
 
 using StatFiles
 using DataFrames
