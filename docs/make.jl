@@ -5,7 +5,7 @@ DocMeta.setdocmeta!(Replication_Monge_et_al_2019, :DocTestSetup, :(using Replica
 
 makedocs(;
     modules=[Replication_Monge_et_al_2019],
-    authors="Paulogcd <gugelmopaulo@gmail.com> and contributors",
+    authors="CHAMBON Lionel, COMPÉRAT Étienne, and GUGELMO CAVALHEIRO DIAS Paulo",
     sitename="Replication_Monge_et_al_2019.jl",
     format=Documenter.HTML(;
         canonical="https://Paulogcd.github.io/Replication_Monge_et_al_2019.jl",
