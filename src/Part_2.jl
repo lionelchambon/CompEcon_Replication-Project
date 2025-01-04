@@ -184,7 +184,7 @@ function create_table_1()
     # rm("output/doc_table_1.tex")   
 
     # Compile the latex code :
-    Base.run(pipeline(`pwd`,`cd output`,`pdflatex --interaction=batchmode output/doc_table_1.tex`));
+    Base.run(pipeline(`pwd`,`cd output/`,`pdflatex --interaction=batchmode output/doc_table_1.tex`));
     Base.run(`mv doc_table_1.pdf output/doc_table_1.pdf`);
     Base.run(`rm doc_table_1.aux doc_table_1.log`);
 end
