@@ -189,11 +189,11 @@ function create_table_1()
     Base.run(`rm doc_table_1.aux doc_table_1.log`);
 end
 
-create_table_1()
+# create_table_1()
 
-rm("output/doc_table_1.tex")
-rm("output/doc_table_1.pdf")
-rm("output/table_1.tex")
-rm("output/table_1.csv")
+# rm("output/doc_table_1.tex")
+# rm("output/doc_table_1.pdf")
+# rm("output/table_1.tex")
+# rm("output/table_1.csv")
 
 ### Figure 1. Output Share of Natural Resources (Excluding Urban Land), 2000
