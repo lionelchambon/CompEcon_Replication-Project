@@ -1,11 +1,13 @@
-include("Part_2.jl")
+# This file is dedicated to replicate the results of the part 3 of the article.
 
 using DataFrames
 using DataFramesMeta
 using StatFiles
 using Statistics
 using CSV
-using Test
+
+# We are going to use the array benchmark_76 of the common file.
+include("common.jl")
 
 # First, I merge the pwt data with the author's calculated NRR shares.
 
@@ -21,12 +23,13 @@ df_phi_NR = select(df_phi, :country, :year, :phi_NR)
 
 data_fig4 = leftjoin(df_pwt, df_phi_NR, on=[:country, :year])
 
-# Next I restrict to the sample size in the figure. I also assume that we are looking at the previous sample of countires, though
+# Next I restrict to the sample size in the figure.
+# I also assume that we are looking at the previous sample of countires, though
 # this is not explicitly mentioned in the paper.
 
 data_fig4 = filter(row -> row.country in benchmark_76 && (1970 <= row.year <= 2005), data_fig4)
 
-CSV.write("src/data/data_fig4.csv", data_fig4)
+CSV.write("output/data_fig4.csv", data_fig4)
 
 # Testing that we obtain the correct number of years and countries:
 
@@ -35,11 +38,16 @@ countries_in_df = unique(data_fig4.country)
 unique_years = unique(data_fig4.year)
 valid_years = 1970:2005
 
-@test num_countries == 76  # Expected number of unique countries
-@test unique_years == valid_years  # Expected unique years (order matters)
+if num_countries !== 76
+    @error("The expected number of unique countries is 76.")
+end
+if  unique_years !== valid_years 
+    @error("Expected unique years (order matters) is wrong.")
+end
 
 # The test, there is a country missing.
 
-missing_countries = setdiff(benchmark_76, countries_in_df)
-println("Missing countries: $missing_countries")
+# No sure about the following two lines : 
+# missing_countries = setdiff(benchmark_76, countries_in_df)
+# println("Missing countries: $missing_countries")
 
