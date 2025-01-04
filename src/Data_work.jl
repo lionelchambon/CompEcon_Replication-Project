@@ -195,7 +195,8 @@ pwt_data[!, :phi_NR_subsoil] .= ifelse.(pwt_data.tag_phi_NR_subsoil .!= 1,
     [sum(skipmissing(row[subsoil_resources]); init=0.0) for row in eachrow(pwt_data)],
     missing)
 # Checking
-first(select(pwt_data, [:country, :year, :phi_NR_subsoil]), 10) # The numbers match.
+# The numbers match : 
+first(select(pwt_data, [:country, :year, :phi_NR_subsoil]), 10) 
 
 
 # For Serbia and Montenegro we have joint data but NOT individual.
@@ -288,7 +289,7 @@ pwt_data[!, :phi_NR_subsoil] .= ifelse.(pwt_data.country .== "Montenegro",
 # Drop rows where country is "Serbia and Montenegro"
 pwt_data = filter(row -> row.country != "Serbia and Montenegro", pwt_data)
 
-#Checking
+# Checking
 #   new columns (they match)
 select(pwt_data, [:country, :year, :phi_NR_timber, :phi_NR_subsoil, :phi_NR_timber_mont, :phi_NR_subsoil_mont]) |> first
 #   inpsect rows for Montenegro
@@ -296,7 +297,7 @@ montenegro_data = filter(row -> row[:country] == "Montenegro", pwt_data)
 relevant_columns = [:year, :phi_NR_timber, :phi_NR_subsoil, :phi_NR_timber_mont, :phi_NR_subsoil_mont]
 select(montenegro_data, relevant_columns) #the numbers match
 #    Ensure "Serbia and Montenegro" is dropped
-# println(unique(pwt_data.country)) #dropped
+# println(unique(pwt_data.country)) # dropped
 
 
 

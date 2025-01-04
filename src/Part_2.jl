@@ -121,7 +121,7 @@ CVs = [ CV_NR,
 # The last column is 
 # the correlation between the variable and the countries’ per capita output levels
 
-# We have to get the countries per capita outout level. 
+# We have to get the countries per capita output level. 
 
 Corr = repeat([NaN], 9) # We do not have the per capita output yet.
 
