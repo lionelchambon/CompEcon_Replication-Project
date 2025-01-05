@@ -25,6 +25,9 @@ using CSV
 using Statistics
 
 # Load the dataset of the Penn World Tables (pwt) :
+# cd(dirname(pathof(Replication_Monge_et_al_2019)))
+# splitdir(pwd())[2]
+# cd("data")
 pwt_data = DataFrame(load("src/data/pwt80.dta"))
 # We save the dimensions for later checks : 
 initial_size = size(pwt_data)
@@ -824,4 +827,4 @@ summary_table = combine(
 # Drop the `_merge` column
 select!(pwt_data, Not(:_merge))
 
-pw_data_2 = copy(pwt_data)
+pwt_data_2 = copy(pwt_data)

@@ -35,8 +35,8 @@ CSV.write("output/data_fig4.csv", data_fig4)
 
 # Testing that we obtain the correct number of years and countries:
 
-num_countries = length(unique(data_fig4.country))
-unique_years = length(unique(data_fig4.year))
+# num_countries = length(unique(data_fig4.country))
+# unique_years = length(unique(data_fig4.year))
 
 if num_countries !== 76
     @error("The expected number of unique countries is 76.")
@@ -54,10 +54,8 @@ data_fig4.VMPK = data_fig4.QMPK .* (data_fig4.pl_gdpo ./ data_fig4.pl_k)
 
 columns_to_check = ["QMPK", "VMPK"]
 for col in columns_to_check
-    if col in names(data_fig4)
-        println("Column $col is present in data_fig4.")
-    else
-        println("Error: Column $col is missing from data_fig4.")
+    if col ∉ names(data_fig4)
+        @error("Column $col is missing in data_fig4.")
     end
 end
 
@@ -155,12 +153,14 @@ plot_vmpk = plot_fig4(vmpk_summary, :VMPK, "Panel B. VMPK", "Value MPK", ylim_ra
 display(plot_qmpk)
 display(plot_vmpk)
 
-fig4_repl = plot(
-    plot_qmpk, plot_vmpk, layout=(1, 2), size=(1000, 450), subtitle="Figure 4: Global Evolution of MPKs") # Plot is cut off, fix later
-
+fig4_repl = plot(plot_qmpk,
+                    plot_vmpk,
+                    layout=(1, 2),
+                    size=(1000, 450),
+                    subtitle="Figure 4: Global Evolution of MPKs") # Plot is cut off, fix later
 savefig(fig4_repl, "output/fig4_repl.png")
 
-# Moving on to Table 3 of Section III.
+### Table 3 :
 
 # Computing logs
 data_fig4[:, :log_QMPK] = log.(data_fig4.QMPK)
@@ -241,7 +241,9 @@ end
 years_of_interest = [1970, 1980, 1990, 2000]
 data_tab3 = filter(row -> row.year in years_of_interest, data_tab3)
 
-pretty_table(data_tab3) # Can we find a way to export thi into the output folder?
+pretty_table(data_tab3) # Can we find a way to export this into the output folder?
+
+### Table 4 & 5
 
 # Now, we move on to the final tables of this section. To do so, we need data on the Sachs & Warner indicator as cited in the 
 # paper. However, this is not available in the replication package, so I use a .csv file from: https://www.bristol.ac.uk/depts/Economics/Growth/sachs.htm
@@ -277,7 +279,7 @@ if  unique_years_bis !== 36
     @error("Expected unique years (order matters) is wrong.")
 end
 
-# Now, we can build Tables 4 and 5. I cannot be sure whether the indicator data I added is identical the the data used by
+# Now, we can build Tables 4 and 5. I cannot be sure whether the indicator data I added is identical to the data used by
 # the authors, but I first proceed by filtering mising values and coding the open variable as a binary one:
 
 data_tab4and5 = filter(row -> !ismissing(row.open) && row.open in [0.00, 1.00], data_tab4and5)
@@ -308,7 +310,8 @@ data_tab4and5.open .= Int.(data_tab4and5.open .== 1.0)
 end
 
 data_tab4and5.year_bin = map(create_year_bins, data_tab4and5.year)
-grouped_tab4 = groupby(data_tab4and5, [:year_bin, :open]) # Grouped by SW indicator
+# Grouped by SW indicator
+grouped_tab4 = groupby(data_tab4and5, [:year_bin, :open]) 
 
 stats_tab4 = combine(grouped_tab4, 
     :QMPK => mean => :QMPK_mean,

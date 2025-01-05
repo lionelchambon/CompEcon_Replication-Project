@@ -4,8 +4,8 @@ using Replication_Monge_et_al_2019
 using Test
 using DataFrames
 
-@testset "Part_2.jl" begin
-    
+@testset "Results Part 2" begin
+
     # Testing the function isin :
     @test Replication_Monge_et_al_2019.isin([1,2], [1,2,3]) == [true, true]
     @test Replication_Monge_et_al_2019.isin([1,2,3], [1,2,3]) == [true, true, true]
