@@ -99,3 +99,8 @@ benchmark_79 = [
 # The authors exlude three countries, because these countries do not have data on human capital, to create another set of 76 countries :  
 to_exclude = ["Burkina Faso", "Nigeria", "Oman"]
 benchmark_76 = filter(e->e ∉ to_exclude,benchmark_79)
+
+# We do the same to exclude oil exporters:
+
+exclude_oil = ["Bahrain", "Ecuador", "Kuwait", "Nigeria", "Oman", "Norway", "Qatar", "Saudi Arabia", "Trinidad & Tobago"]
+benchmark_wo_oil = filter(e -> !(e in exclude_oil), benchmark_76)
