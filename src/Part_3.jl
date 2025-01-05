@@ -1,5 +1,6 @@
 # This file is dedicated to replicate the results of the part 3 of the article.
 
+using Pkg
 using DataFrames
 using DataFramesMeta
 using StatFiles
