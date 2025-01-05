@@ -28,13 +28,17 @@ include("Part_2.jl")
 # include("Results_part_5.jl")
 
 # The function run() should call all the necessary functions to get the results : 
+"""
+The function `run()` call all the results we got from our replication attempt.
+It produces pdf files, generated in the "output" folder.
+"""
 function run()
 
     # # Part 1 :
     # create_data()
 
     # # Part 2 :
-    # create_table_1()
+    create_table_1()
     # create_figure_1()
     # create_figure_2()
     # create_table_2()
@@ -62,6 +66,6 @@ function run()
 end
 
 # We can make the functions available by using the export function to export only the chosen ones : 
-export run
+# export ...
 
 end
