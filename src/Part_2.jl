@@ -408,7 +408,7 @@ data_fig3[!, :phi_NR] = Float64.(data_fig3[!, :phi_NR])
 
 # Now, moving on to the plot:
 
-plot_NR = scatter(data_fig3.gdp_per_worker, data_fig3.phi_NR,
+fig3_repl = scatter(data_fig3.gdp_per_worker, data_fig3.phi_NR,
     label="Using rents", color=:red, marker=:square, alpha=0.8,
     xlabel="GDP per worker", ylabel="Natural resource output share", legend=:topright)
 
@@ -418,7 +418,8 @@ trendline_NR = fit_NR[1] .+ fit_NR[2] .* data_fig3.gdp_per_worker
 
 plot!(data_fig3.gdp_per_worker, trendline_NR, color=:red, label="", lw=2, linestyle=:dash)
 
-display(plot_NR)
+display(fig3_repl)
+savefig("output/figure3_repl.png")
 
 # The flat line could be driven by the sample, large variances and/or outliers, as above. However, since nothing further
 # is specified in the replicationn files, we are not ready to make further data cleaning assumptions.
