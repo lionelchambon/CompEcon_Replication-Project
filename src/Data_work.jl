@@ -195,7 +195,8 @@ pwt_data[!, :phi_NR_subsoil] .= ifelse.(pwt_data.tag_phi_NR_subsoil .!= 1,
     [sum(skipmissing(row[subsoil_resources]); init=0.0) for row in eachrow(pwt_data)],
     missing)
 # Checking
-first(select(pwt_data, [:country, :year, :phi_NR_subsoil]), 10) # The numbers match.
+# The numbers match : 
+# first(select(pwt_data, [:country, :year, :phi_NR_subsoil]), 10) 
 
 
 # For Serbia and Montenegro we have joint data but NOT individual.
@@ -237,7 +238,7 @@ pwt_data[!, :phi_NR_subsoil_serb] .= ifelse.(pwt_data.country .== "Serbia and Mo
     missing)
 #Checking
 serbia_montenegro_rows = filter(row -> row.country == "Serbia and Montenegro", pwt_data)
-println(first(serbia_montenegro_rows, 10)) #The numbers match.
+# println(first(serbia_montenegro_rows, 10)) #The numbers match.
 
 # Compute Maximum phi_NR_timber_serb and phi_NR_subsoil_serb by Year
 grouped_data = groupby(pwt_data, :year) # Group by year
@@ -288,7 +289,7 @@ pwt_data[!, :phi_NR_subsoil] .= ifelse.(pwt_data.country .== "Montenegro",
 # Drop rows where country is "Serbia and Montenegro"
 pwt_data = filter(row -> row.country != "Serbia and Montenegro", pwt_data)
 
-#Checking
+# Checking
 #   new columns (they match)
 select(pwt_data, [:country, :year, :phi_NR_timber, :phi_NR_subsoil, :phi_NR_timber_mont, :phi_NR_subsoil_mont]) |> first
 #   inpsect rows for Montenegro
@@ -296,11 +297,10 @@ montenegro_data = filter(row -> row[:country] == "Montenegro", pwt_data)
 relevant_columns = [:year, :phi_NR_timber, :phi_NR_subsoil, :phi_NR_timber_mont, :phi_NR_subsoil_mont]
 select(montenegro_data, relevant_columns) #the numbers match
 #    Ensure "Serbia and Montenegro" is dropped
-println(unique(pwt_data.country)) #dropped
+# println(unique(pwt_data.country)) # dropped
 
-
-
-
+# At this point, pwt_data is what we want. We will call it 
+pwt_data_1 = copy(pwt_data)
 
 ######################################
 # (2) Merge with crop_rent_input.dta #
@@ -329,20 +329,20 @@ pwt_data[!, :_merge] .= ifelse.(
 
 # Tabulate `_merge` values
 merge_tabulation = combine(groupby(pwt_data, :_merge), nrow => :Count)
-println("Tabulation of _merge values:")
-println(merge_tabulation)
+# println("Tabulation of _merge values:")
+# println(merge_tabulation)
 # Create `cc2` column
 pwt_data[!, :cc2] .= string.(pwt_data.countrycode, " ", pwt_data.country)
 # Tabulate `cc2` for `_merge == "PWT only"`
 filtered_cc2_1 = filter(row -> row._merge == "PWT only" && !ismissing(row.nominal_gdp) && row.year < 2006, pwt_data)
 cc2_tabulation_1 = combine(groupby(filtered_cc2_1, :cc2), nrow => :Count)
-println("Tabulation of cc2 for PWT only:")
-println(cc2_tabulation_1) #No observation, this checks with the do-file output.
+# println("Tabulation of cc2 for PWT only:")
+# println(cc2_tabulation_1) #No observation, this checks with the do-file output.
 # Tabulate `cc2` for `_merge == "Crop only"`
 filtered_cc2_2 = filter(row -> row._merge == "Crop only" && !ismissing(row.nominal_gdp) && row.year < 2006, pwt_data)
 cc2_tabulation_2 = combine(groupby(filtered_cc2_2, :cc2), nrow => :Count)
-println("Tabulation of cc2 for Crop only:")
-println(cc2_tabulation_2) #No ibservation, this checks with the do-file output.
+# println("Tabulation of cc2 for Crop only:")
+# println(cc2_tabulation_2) #No ibservation, this checks with the do-file output.
 
 
 
@@ -404,7 +404,7 @@ pwt_data[!, :pq_rent_a_bel] .= ifelse.(
     # Filter rows for "Belgium-Luxembourg"
     bel_lux_rows = filter(row -> row.country == "Belgium-Luxembourg", pwt_data)
     # Select relevant columns for inspection
-    println(select(bel_lux_rows, [:country, :year, :pq_rent_a, :share_bel_2000, :pq_rent_a_bel])) #the numbers match!
+    # println(select(bel_lux_rows, [:country, :year, :pq_rent_a, :share_bel_2000, :pq_rent_a_bel])) #the numbers match!
 # Create a mapping of `year` to `pq_rent_a_bel` for Belgium-Luxembourg
 bel_lux_mapping = Dict(
     row.year => row.pq_rent_a_bel for row in eachrow(pwt_data) 
@@ -421,9 +421,9 @@ pwt_data[!, :mpq_rent_a_bel] .= get.(Ref(bel_lux_mapping), pwt_data.year, missin
     grouped_by_year = groupby(sorted_data, :year)
     # Iterate through each group and display the relevant rows
     for group in grouped_by_year
-        println("Year: ", first(group).year)
-        println(select(group, [:country, :year, :pq_rent_a_bel, :mpq_rent_a_bel]))
-        println("--------------------------")
+        # println("Year: ", first(group).year)
+        # println(select(group, [:country, :year, :pq_rent_a_bel, :mpq_rent_a_bel]))
+        # println("--------------------------")
     end # the numbers match!
 # Replace `pq_rent_a` for Belgium for years before 2000
 pwt_data[!, :pq_rent_a] .= ifelse.(
@@ -448,7 +448,7 @@ pwt_data[!, :pq_rent_a_lux] .= ifelse.(
     # Filter rows for "Belgium-Luxembourg"
     bel_lux_rows = filter(row -> row.country == "Belgium-Luxembourg", pwt_data)
     # Select relevant columns for inspection
-    println(select(bel_lux_rows, [:country, :year, :pq_rent_a, :share_lux_2000, :pq_rent_a_lux])) #the numbers match!
+    # println(select(bel_lux_rows, [:country, :year, :pq_rent_a, :share_lux_2000, :pq_rent_a_lux])) #the numbers match!
     # Create a mapping of `year` to `pq_rent_a_lux` for Belgium-Luxembourg
 bel_lux_mapping = Dict(
     row.year => row.pq_rent_a_lux for row in eachrow(pwt_data) 
@@ -465,9 +465,9 @@ pwt_data[!, :mpq_rent_a_lux] .= get.(Ref(bel_lux_mapping), pwt_data.year, missin
     grouped_by_year = groupby(sorted_data, :year)
     # Iterate through each group and display the relevant rows
     for group in grouped_by_year
-        println("Year: ", first(group).year)
-        println(select(group, [:country, :year, :pq_rent_a_lux, :mpq_rent_a_lux]))
-        println("--------------------------")
+        # println("Year: ", first(group).year)
+        # println(select(group, [:country, :year, :pq_rent_a_lux, :mpq_rent_a_lux]))
+        # println("--------------------------")
     end# the numbers match!
 # Replace `pq_rent_a` for Luxembourg for years before 2000
 pwt_data[!, :pq_rent_a] .= ifelse.(
@@ -527,7 +527,7 @@ pwt_data[!, :mslo_1993] .= mslo_1993
         pwt_data
     )
     # Display relevant columns
-    println(select(cze_slo_rows, [:country, :year, :pq_rent_a, :cze_1993, :slo_1993, :mcze_1993, :mslo_1993]))
+    # println(select(cze_slo_rows, [:country, :year, :pq_rent_a, :cze_1993, :slo_1993, :mcze_1993, :mslo_1993]))
     #it checks out
 
 # They do:
@@ -562,7 +562,7 @@ cze_rows = filter(
     pwt_data
 )
 # Displaying relevant columns to validate
-println(select(cze_rows, [:country, :year, :pq_rent_a, :pq_rent_a_cze]))
+# println(select(cze_rows, [:country, :year, :pq_rent_a, :pq_rent_a_cze]))
 #The numbers match!
 
 
@@ -599,7 +599,7 @@ pwt_data[!, :pq_rent_a] .= ifelse.(
         pwt_data
     )
     # Displaying relevant columns to validate
-    println(select(slo_rows, [:country, :year, :pq_rent_a, :pq_rent_a_slo]))
+    # println(select(slo_rows, [:country, :year, :pq_rent_a, :pq_rent_a_slo]))
 
 
 # # They do:
@@ -620,7 +620,7 @@ pwt_data = filter(row -> row.country != "Czechoslovakia", pwt_data)
         pwt_data
     )
     # Inspect relevant rows with additional columns
-    println(select(relevant_rows, [:country, :countrycode, :year, :pq_rent_a,])) # Numbers check
+    # println(select(relevant_rows, [:country, :countrycode, :year, :pq_rent_a,])) # Numbers check
 
 
 
@@ -667,7 +667,7 @@ serb_mont_rows = filter(
     pwt_data
 )
 # Display relevant columns to validate
-println(select(serb_mont_rows, [:country, :year, :pq_rent_a, :serb_2006, :mont_2006, :mserb_2006, :mmont_2006]))
+# println(select(serb_mont_rows, [:country, :year, :pq_rent_a, :serb_2006, :mont_2006, :mserb_2006, :mmont_2006]))
 
 
 
@@ -704,7 +704,7 @@ pwt_data[!, :pq_rent_a] .= ifelse.(
         pwt_data
     )
     # Display relevant columns to validate
-    println(select(serb_rows, [:country, :year, :pq_rent_a_serb, :pq_rent_a]))
+    # println(select(serb_rows, [:country, :year, :pq_rent_a_serb, :pq_rent_a]))
 
 
 # They do:
@@ -738,7 +738,7 @@ mont_rows = filter(
     pwt_data
 )
 # Display relevant columns to validate
-println(select(mont_rows, [:country, :year, :pq_rent_a_mont, :pq_rent_a]))
+# println(select(mont_rows, [:country, :year, :pq_rent_a_mont, :pq_rent_a]))
 
 
 
@@ -761,7 +761,7 @@ pwt_data = filter(row -> row.country != "Serbia and Montenegro", pwt_data);
         pwt_data
     )
     # Inspect rows for Serbia, Montenegro, and Serbia and Montenegro with additional columns
-    println(select(serb_mont_rows, [:country, :countrycode, :year, :pq_rent_a])) #numbers check
+    # println(select(serb_mont_rows, [:country, :countrycode, :year, :pq_rent_a])) #numbers check
 
 
 
@@ -783,7 +783,7 @@ pwt_data[!, :phi_NR_crop_pq_p] .= pwt_data.pq_rent_p ./ pwt_data.nominal_gdp
 pwt_data[!, :phi_NR_crop_fao_p] .= pwt_data.fao_rent_p ./ pwt_data.nominal_gdp
 
 # Checking the first rows
-println(first(select(pwt_data, [:country, :year, :phi_NR_crop_pq_a, :phi_NR_crop_fao_a, :phi_NR_crop_pq_p, :phi_NR_crop_fao_p]), 10))
+# println(first(select(pwt_data, [:country, :year, :phi_NR_crop_pq_a, :phi_NR_crop_fao_a, :phi_NR_crop_pq_p, :phi_NR_crop_fao_p]), 10))
 
 
 
@@ -802,7 +802,7 @@ variable_labels = Dict(
     :phi_NR_crop_fao_p => "phi_NR_crop_FAO_p: rent/gdp using FAO and production weights"
 )
 # Access a label example
-println("Label for phi_NR_crop_pq_a: ", variable_labels[:phi_NR_crop_pq_a])
+# println("Label for phi_NR_crop_pq_a: ", variable_labels[:phi_NR_crop_pq_a])
 
 
 
@@ -823,3 +823,5 @@ summary_table = combine(
 
 # Drop the `_merge` column
 select!(pwt_data, Not(:_merge))
+
+pw_data_2 = copy(pwt_data)
