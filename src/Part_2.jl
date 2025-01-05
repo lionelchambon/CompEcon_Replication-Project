@@ -196,4 +196,50 @@ end
 # rm("output/table_1.tex")
 # rm("output/table_1.csv")
 
-### Figure 1. Output Share of Natural Resources (Excluding Urban Land), 2000
+# Trying : 
+# 
+# "oil" in names(pwt_data_1)
+# "ng" in names(pwt_data_1)  # ng stands for natural gas
+# 
+# # "Other" is : 
+# Other_names = names(pwt_data_1)[65:75]
+# Others_df = pwt_data_1[:,Other_names]
+# Others_df
+# 
+# 
+# 
+#     print(i)
+#     # summation[i] = sum(skipmissing(Others_df[i, :]))
+# end
+# summation = []
+# for row in size(Others_df)[1]
+#     sum_of_row = 0
+#     for col in size(Others_df)[2]
+#         if ismissing(Others_df[row,col])
+#             to_add = 0
+#         else
+#             to_add = Others_df[row,col]
+#         end
+#         sum_of_row += to_add
+#     end
+#     push!(summation, sum_of_row)
+# end
+# 
+# 
+# a = [1,2,3,4]
+# push!(a,5)
+# transform!(Others_df, Other_names .=> (row -> sum(skipmissing(row))) => :Other)
+# 
+# skipmissing.(eachcol(Others_df))
+# 
+# sum(1,2,3)
+# 
+# 
+# transform!(pwt_data_1, [:Other] => (+) => :c)
+# pwt_data_1[:,:Other]
+# Others = [  "phi_NR_coal",
+#             "phi"
+# ]
+# 
+# ### Figure 1. Output Share of Natural Resources (Excluding Urban Land), 2000
+# 

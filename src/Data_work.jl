@@ -196,7 +196,7 @@ pwt_data[!, :phi_NR_subsoil] .= ifelse.(pwt_data.tag_phi_NR_subsoil .!= 1,
     missing)
 # Checking
 # The numbers match : 
-first(select(pwt_data, [:country, :year, :phi_NR_subsoil]), 10) 
+# first(select(pwt_data, [:country, :year, :phi_NR_subsoil]), 10) 
 
 
 # For Serbia and Montenegro we have joint data but NOT individual.
@@ -299,9 +299,8 @@ select(montenegro_data, relevant_columns) #the numbers match
 #    Ensure "Serbia and Montenegro" is dropped
 # println(unique(pwt_data.country)) # dropped
 
-
-
-
+# At this point, pwt_data is what we want. We will call it 
+pwt_data_1 = copy(pwt_data)
 
 ######################################
 # (2) Merge with crop_rent_input.dta #
@@ -824,3 +823,5 @@ summary_table = combine(
 
 # Drop the `_merge` column
 select!(pwt_data, Not(:_merge))
+
+pw_data_2 = copy(pwt_data)
