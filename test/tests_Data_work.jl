@@ -50,9 +50,9 @@ using StatFiles
         push!(approximately, tmp2)
     end
 
-    approximately = []
-    for col in 1:size(true_pwt_data_1)[2]
-        true_pwt_data_1[:,col] isa Number
-    end
+    # approximately = []
+    # for col in 1:size(true_pwt_data_1)[2]
+    #     true_pwt_data_1[:,col] isa Number
+    # end
 
 end
