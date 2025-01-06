@@ -72,7 +72,7 @@ end
                     #   print(Replication_Monge_et_al_2019.pwt_data_1[:,col])
                     # numerical_columns += 1
                     # missing_to_zero.(true_pwt_data_1[:,col])
-                    @test isapprox(to_number.(true_pwt_data_1[:,col]), to_number.(Replication_Monge_et_al_2019.pwt_data_1[:,col]); atol=1000000)
+                    @test isapprox(to_number.(true_pwt_data_1[:,col]), to_number.(Replication_Monge_et_al_2019.pwt_data_1[:,col]); atol=10)
                 end
             end
         end
@@ -96,7 +96,6 @@ end
             end
         end
     end
-
 end
 
 

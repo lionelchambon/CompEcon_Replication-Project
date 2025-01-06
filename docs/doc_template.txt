@@ -1,0 +1,16 @@
+
+
+"""
+The function `create_()` creates a `png` containing the replication result of the Figure 1.
+
+The `png` file is created within an `output` folder.
+
+"""
+
+"""
+The function `delete_table_1()` deletes the `pdf` file containing
+the replication result of Figure 1, if the present working directory has a folder `output` containing it.
+"""
+function delete_table_1()
+    rm("output/table_1.png")
+end

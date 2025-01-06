@@ -1,6 +1,11 @@
 # This file is dedicated to replicate the results of the part 3 of the article.
 
-using Pkg
+# It contains : 
+# Figure 4 
+# Table 3 
+# Table 4
+# Table 5
+
 using DataFrames
 using DataFramesMeta
 using StatFiles
@@ -11,6 +16,8 @@ using PrettyTables
 
 # We are going to use the array benchmark_76 of the common file.
 include("common.jl")
+
+### Figure 4 
 
 # First, I merge the pwt data with the author's calculated NRR shares.
 
@@ -36,8 +43,8 @@ CSV.write("output/data_fig4.csv", data_fig4)
 
 # Testing that we obtain the correct number of years and countries:
 
-# num_countries = length(unique(data_fig4.country))
-# unique_years = length(unique(data_fig4.year))
+num_countries = length(unique(data_fig4.country))
+unique_years = length(unique(data_fig4.year))
 
 if num_countries !== 76
     @error("The expected number of unique countries is 76.")
@@ -63,6 +70,7 @@ end
 # We can now proceed to plotting.
 
 # First, we need to calculate the percentiles and ranges as displayed in Figure 4:
+
 
 function summarize(df, column)
     grouped = groupby(df, :year)
@@ -151,15 +159,30 @@ end
 plot_qmpk = plot_fig4(qmpk_summary, :QMPK, "Panel A. QMPK", "Quantity MPK", ylim_range=(0, 0.5),background_color=:white)
 plot_vmpk = plot_fig4(vmpk_summary, :VMPK, "Panel B. VMPK", "Value MPK", ylim_range=(0, 0.5),background_color=:white)
 
-display(plot_qmpk)
-display(plot_vmpk)
+# display(plot_qmpk)
+# display(plot_vmpk)
 
-fig4_repl = plot(plot_qmpk,
-                    plot_vmpk,
-                    layout=(1, 2),
-                    size=(1000, 450),
-                    subtitle="Figure 4: Global Evolution of MPKs") # Plot is cut off, fix later
-savefig(fig4_repl, "output/fig4_repl.png")
+"""
+The function `create_figure_4()` creates a `png` containing the replication result of the Figure 4.
+
+The `png` file is created within an `output` folder.
+"""
+function create_figure_4()
+    fig4_repl = plot(plot_qmpk,
+                        plot_vmpk,
+                        layout=(1, 2),
+                        size=(1000, 450),
+                        subtitle="Figure 4: Global Evolution of MPKs") # Plot is cut off ? fix later
+    savefig(fig4_repl, "output/figure_4.png")
+end
+"""
+The function `delete_figure_4()` deletes the `png` file containing
+the replication result of Figure 4, if the present working directory has a folder `output` containing it.
+"""
+function delete_figure_4()
+    rm("output/figure_4.png")
+end
+
 
 ### Table 3 :
 
@@ -220,17 +243,13 @@ manual_varVMPK = var(data_fig4[!, :log_QMPK]) +
 computed_varQMPK = var(data_fig4[!, :log_QMPK])
 computed_varVMPK = var(data_fig4[!, :log_VMPK])
 
-if isapprox(computed_varQMPK, manual_varQMPK; atol=1e-7)
-    println("VarQMPK matches the manual computation!")
-else
+if false == isapprox(computed_varQMPK, manual_varQMPK)
     println("Error: VarQMPK does not match the manual computation.")
     println("Computed VarQMPK: $computed_varQMPK")
     println("Manual VarQMPK: $manual_varQMPK")
 end
 
-if isapprox(computed_varVMPK, manual_varVMPK; atol=1e-7)
-    println("VarVMPK matches the manual computation!")
-else
+if false == isapprox(computed_varVMPK, manual_varVMPK)
     println("Error: VarVMPK does not match the manual computation.")
     println("Computed VarVMPK: $computed_varVMPK")
     println("Manual VarVMPK: $manual_varVMPK")
@@ -242,7 +261,19 @@ end
 years_of_interest = [1970, 1980, 1990, 2000]
 data_tab3 = filter(row -> row.year in years_of_interest, data_tab3)
 
-pretty_table(data_tab3) # Can we find a way to export this into the output folder?
+# Can we find a way to export this into the output folder?
+# Good question. Here is the beginning of an attempt, but
+# it does not work.
+# Check : template_prettyTables_to_png.jl for pists, even though it does not work yet.
+# function create_table_3()
+#     html_table_3 = pretty_table(
+#             data_tab3;
+#             backend = Val(:html),
+#             standalone = true)
+#             print(html_table_3)
+#     write("output/table_3.html", html_table_3)
+# end
+
 
 ### Table 4 & 5
 
@@ -327,7 +358,7 @@ stats_tab4_closed = filter(row -> row.open == 0, stats_tab4)
 
 tab4 = innerjoin(stats_tab4_open, stats_tab4_closed, on=:year_bin, makeunique=true)
 
-# WWriting a function to compute t-stats:
+# Writing a function to compute t-stats:
 
 function compute_t_stat(mean1, mean2, n1, n2, std1, std2)
     return (mean1 - mean2) / sqrt((std1^2 / n1) + (std2^2 / n2))
@@ -367,6 +398,12 @@ tab4_repl = select(tab4, desired_order...)
 
 println(tab4_repl)
 CSV.write("output/table4_repl.csv", tab4_repl)
+
+# Here, we should have : 
+
+# function create_table_4()
+#     ...
+# end
 
 # For the last table of Section III, we repeat the exercise for factor shares, output-to-capital ratios, and relative prices:
 
@@ -439,3 +476,8 @@ rename!(tab5_repl, Dict(
 println(tab5_repl)
 CSV.write("output/table5_repl.csv", tab5_repl)
 
+# Here, we should have
+
+# function create_table_5()
+#     ...
+# end
