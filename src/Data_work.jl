@@ -1292,7 +1292,7 @@ pwt_data = filter(
 # Generate `phi_NR_pasture`
 pwt_data[!, :phi_NR_pasture] .= pwt_data.pasture_rent ./ pwt_data.nominal_gdp
 # Inspect the first 10 rows of relevant columns
-println(first(select(pwt_data, [:country, :year, :pasture_rent, :nominal_gdp, :phi_NR_pasture]), 10))
+#println(first(select(pwt_data, [:country, :year, :pasture_rent, :nominal_gdp, :phi_NR_pasture]), 10))
 
 # Drop `_merge` column
 select!(pwt_data, Not(:_merge))
