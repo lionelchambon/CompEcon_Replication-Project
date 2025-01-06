@@ -15,15 +15,14 @@ using Plots
 using PrettyTables
 
 # We are going to use the array benchmark_76 of the common file.
-include("common.jl")
+include("country_samples.jl")
 
 ### Figure 4 
 
 # First, I merge the pwt data with the author's calculated NRR shares.
 
 df_phi = DataFrame(load("src/data/MSS_NRshares.dta"))
-df_pwt = DataFrame(load("src/data/pwt80.dta"))
-replace!(df_pwt.country, "Cote d`Ivoire" => "Cote dIvoire")
+df_pwt = DataFrame(load("output/pwt_data_0.csv"))
 
 # Selecting the total phiNR variable:
 
