@@ -197,6 +197,7 @@ end
 The function `delete_table_1()` deletes the `pdf` file containing
 the replication result of Figure 1, if the present working directory has a folder `output` containing it.
 """
+
 function delete_table_1()
     rm("output/doc_table_1.pdf")
     rm("output/doc_table_1.tex")
@@ -355,7 +356,6 @@ end
 
 # Now continuing with Figure 2:
 
-
 """
 The function `create_figure_2()` creates a png containing the replication result of the Figure 2.
 
@@ -450,11 +450,13 @@ CSV.write("output/data_fig3.csv", data_fig3)
 data_fig3[!, :phi_NR] = Float64.(data_fig3[!, :phi_NR]) 
 
 # Now, moving on to the plot:
+
 """
 The function `create_figure_3()` creates a `png` containing the replication result of the Figure 3.
 
 The `png` file is created within an `output` folder.
 """
+
 function create_figure_3()
     fig3_repl = scatter(data_fig3.gdp_per_worker, data_fig3.phi_NR,
         label="Using rents", color=:red, marker=:square, alpha=0.8,

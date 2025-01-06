@@ -259,20 +259,26 @@ end
 
 years_of_interest = [1970, 1980, 1990, 2000]
 data_tab3 = filter(row -> row.year in years_of_interest, data_tab3)
+CSV.write("output/table3_repl.csv", data_tab3)
 
-# Can we find a way to export this into the output folder?
-# Good question. Here is the beginning of an attempt, but
-# it does not work.
-# Check : template_prettyTables_to_png.jl for pists, even though it does not work yet.
-# function create_table_3()
-#     html_table_3 = pretty_table(
-#             data_tab3;
-#             backend = Val(:html),
-#             standalone = true)
-#             print(html_table_3)
-#     write("output/table_3.html", html_table_3)
-# end
+# Function to create and save the HTML table
 
+#function create_table_3(tab3_csv_path::String, tab3_html_path::String)
+#
+#    data = CSV.read(tab3_csv_path, DataFrame)
+#    html_table = pretty_table(data; backend = Val(:html), standalone = true)
+#    
+#    # Save the HTML table to a file
+#    open(tab3_html_path, "w") do file
+#        write(file, html_table)
+#    end
+#
+#    println("HTML table saved to $output_html_path")
+#end
+
+#tab3_csv = "output/table3_repl.csv"  
+#tab3_html = "output/table3_repl.html"  
+#create_table_3(tab3_csv, tab3_html)
 
 ### Table 4 & 5
 
@@ -341,7 +347,9 @@ data_tab4and5.open .= Int.(data_tab4and5.open .== 1.0)
 end
 
 data_tab4and5.year_bin = map(create_year_bins, data_tab4and5.year)
+
 # Grouped by SW indicator
+
 grouped_tab4 = groupby(data_tab4and5, [:year_bin, :open]) 
 
 stats_tab4 = combine(grouped_tab4, 
