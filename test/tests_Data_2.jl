@@ -7,6 +7,15 @@
     cd("data")
     true_pwt_data_2 = DataFrame(load("true_pwt_data_2.dta"))
 
+    @testset "Loading of own data - 2" begin
+        cd(dirname(pathof(Replication_Monge_et_al_2019)))
+        cd(splitdir(pwd())[1])
+        cd("output")
+        # Replication_Monge_et_al_2019.pwt_data_2
+        a = CSV.read("pwt_data_2.csv", DataFrame)
+        @test names(Replication_Monge_et_al_2019.pwt_data_2) == names(a)    
+    end
+
     # Testing the loading :
     @testset "Loading data - 2 " begin
         # We sort it to have it in the same order as them : 

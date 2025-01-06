@@ -191,9 +191,8 @@ end
 subsoil_resources = [:phi_NR_oil, :phi_NR_ng, :phi_NR_coal, :phi_NR_nickel, :phi_NR_lead,
                         :phi_NR_bauxite, :phi_NR_copper, :phi_NR_phosphate, :phi_NR_tin,
                          :phi_NR_zinc, :phi_NR_silver, :phi_NR_iron, :phi_NR_gold]
-# We check if all the phi_NR_x columns for subsoil resources are missing (missing) 
-#   and set tag_phi_NR_subsoil to 1 if true.
-pwt_data[!, :tag_phi_NR_subsoil] .= all(row -> ismissing(row), eachrow(pwt_data[!, subsoil_resources]))
+# Set `tag_phi_NR_subsoil` to 1 if all relevant columns in a row are missing, otherwise 0
+pwt_data[!, :tag_phi_NR_subsoil] = map(row -> all(ismissing, row), eachrow(pwt_data[:, subsoil_resources])) .|> Int
 
 # Generate `phi_NR_subsoil` (row sum of subsoil resources)
 pwt_data[!, :phi_NR_subsoil] .= ifelse.(pwt_data.tag_phi_NR_subsoil .!= 1,
@@ -310,7 +309,12 @@ pwt_data_1 = copy(pwt_data)
 # Save DataFrame to a CSV file
 CSV.write("output/pwt_data_1.csv", pwt_data_1)
 
-
+# Check : 
+# a = CSV.read("output/pwt_data_1.csv", DataFrame)
+# pwt_data_1 == a 
+# isequal(pwt_data_1,a)
+# names(a) == names(pwt_data_1)
+# isapprox(a, pwt_data_1)
 
 ###################################################################################################
 
@@ -1293,8 +1297,272 @@ pwt_data = filter(
 # Generate `phi_NR_pasture`
 pwt_data[!, :phi_NR_pasture] .= pwt_data.pasture_rent ./ pwt_data.nominal_gdp
 # Inspect the first 10 rows of relevant columns
-println(first(select(pwt_data, [:country, :year, :pasture_rent, :nominal_gdp, :phi_NR_pasture]), 10))
+#println(first(select(pwt_data, [:country, :year, :pasture_rent, :nominal_gdp, :phi_NR_pasture]), 10))
+
+# Drop `_merge` column
+select!(pwt_data, Not(:_merge))
+
 
 # Saving it : 
 pwt_data_3 = copy(pwt_data)
 CSV.write("output/pwt_data_3.csv", pwt_data_3)
+
+
+
+
+
+
+
+#######################
+# Construct phi_NR ###
+#######################
+
+
+# They do:
+### local natural_types "timber oil ng coal nickel lead bauxite copper phosphate tin zinc silver iron gold"
+### foreach x of local natural_types {
+###     bys year: egen total_Y`x'=sum(`x')
+### }
+
+# We have had troubles with the loop, so we compute each column manually
+# Compute sum for timber
+timber_sum = combine(
+    groupby(pwt_data, :year),
+    :timber => (x -> sum(skipmissing(x))) => :total_Ytimber
+)
+pwt_data = leftjoin(pwt_data, timber_sum, on=:year)
+
+# Compute sum for oil
+oil_sum = combine(
+    groupby(pwt_data, :year),
+    :oil => (x -> sum(skipmissing(x))) => :total_Yoil
+)
+pwt_data = leftjoin(pwt_data, oil_sum, on=:year)
+
+# Compute sum for natural gas
+ng_sum = combine(
+    groupby(pwt_data, :year),
+    :ng => (x -> sum(skipmissing(x))) => :total_Yng
+)
+pwt_data = leftjoin(pwt_data, ng_sum, on=:year)
+
+# Compute sum for coal
+coal_sum = combine(
+    groupby(pwt_data, :year),
+    :coal => (x -> sum(skipmissing(x))) => :total_Ycoal
+)
+pwt_data = leftjoin(pwt_data, coal_sum, on=:year)
+
+# Compute sum for nickel
+nickel_sum = combine(
+    groupby(pwt_data, :year),
+    :nickel => (x -> sum(skipmissing(x))) => :total_Ynickel
+)
+pwt_data = leftjoin(pwt_data, nickel_sum, on=:year)
+
+# Compute sum for lead
+lead_sum = combine(
+    groupby(pwt_data, :year),
+    :lead => (x -> sum(skipmissing(x))) => :total_Ylead
+)
+pwt_data = leftjoin(pwt_data, lead_sum, on=:year)
+
+# Compute sum for bauxite
+bauxite_sum = combine(
+    groupby(pwt_data, :year),
+    :bauxite => (x -> sum(skipmissing(x))) => :total_Ybauxite
+)
+pwt_data = leftjoin(pwt_data, bauxite_sum, on=:year)
+
+# Compute sum for copper
+copper_sum = combine(
+    groupby(pwt_data, :year),
+    :copper => (x -> sum(skipmissing(x))) => :total_Ycopper
+)
+pwt_data = leftjoin(pwt_data, copper_sum, on=:year)
+
+# Compute sum for phosphate
+phosphate_sum = combine(
+    groupby(pwt_data, :year),
+    :phosphate => (x -> sum(skipmissing(x))) => :total_Yphosphate
+)
+pwt_data = leftjoin(pwt_data, phosphate_sum, on=:year)
+
+# Compute sum for tin
+tin_sum = combine(
+    groupby(pwt_data, :year),
+    :tin => (x -> sum(skipmissing(x))) => :total_Ytin
+)
+pwt_data = leftjoin(pwt_data, tin_sum, on=:year)
+
+# Compute sum for zinc
+zinc_sum = combine(
+    groupby(pwt_data, :year),
+    :zinc => (x -> sum(skipmissing(x))) => :total_Yzinc
+)
+pwt_data = leftjoin(pwt_data, zinc_sum, on=:year)
+
+# Compute sum for silver
+silver_sum = combine(
+    groupby(pwt_data, :year),
+    :silver => (x -> sum(skipmissing(x))) => :total_Ysilver
+)
+pwt_data = leftjoin(pwt_data, silver_sum, on=:year)
+
+# Compute sum for iron
+iron_sum = combine(
+    groupby(pwt_data, :year),
+    :iron => (x -> sum(skipmissing(x))) => :total_Yiron
+)
+pwt_data = leftjoin(pwt_data, iron_sum, on=:year)
+
+# Compute sum for gold
+gold_sum = combine(
+    groupby(pwt_data, :year),
+    :gold => (x -> sum(skipmissing(x))) => :total_Ygold
+)
+pwt_data = leftjoin(pwt_data, gold_sum, on=:year)
+
+
+
+# They do:
+### egen total_YNR=rsum(total_Ytimber total_Yoil total_Yng total_Ycoal total_Ynickel
+### total_Ylead total_Ybauxite total_Ycopper total_Yphosphate total_Ytin total_Yzinc 
+### total_Ysilver total_Yiron total_Ygold)
+
+# Define the relevant columns for natural resources
+natural_resource_columns = [
+    :total_Ytimber, :total_Yoil, :total_Yng, :total_Ycoal, :total_Ynickel,
+    :total_Ylead, :total_Ybauxite, :total_Ycopper, :total_Yphosphate,
+    :total_Ytin, :total_Yzinc, :total_Ysilver, :total_Yiron, :total_Ygold
+]
+# Compute total_YNR by summing the relevant columns row-wise
+pwt_data[!, :total_YNR] = map(row -> sum(skipmissing(row)), eachrow(pwt_data[:, natural_resource_columns]))
+
+# Checking the first 10 rows of the new column for verification
+# println(first(pwt_data[:, [:year, :total_YNR]], 10))
+
+
+
+# They do:
+### local natural_types "timber oil ng coal nickel lead bauxite copper phosphate tin zinc silver iron gold"
+### foreach x of local natural_types {
+###     bys year:  gen share_total_Y`x'=total_Y`x'/total_YNR
+### }
+
+# Define the relevant columns for natural resources
+natural_types = [:timber, :oil, :ng, :coal, :nickel, :lead, :bauxite, :copper, :phosphate, :tin, :zinc, :silver, :iron, :gold]
+
+for resource in natural_types
+    # Compute the share column
+     share_column = Symbol("share_total_Y", resource)
+     total_column = Symbol("total_Y", resource)
+    # Create the share column
+     pwt_data[!, share_column] = pwt_data[!, total_column] ./ pwt_data[!, :total_YNR]
+end
+
+# Select relevant columns for inspection
+# columns_to_check = [:year, :total_YNR] ∪ [Symbol("share_total_Y", resource) for resource in natural_types]
+# println(first(pwt_data[:, columns_to_check], 10))
+
+
+# They do:
+### egen share_total_Ysuboil=rsum(share_total_Ytimber share_total_Yoil share_total_Yng share_total_Ycoal
+###     share_total_Ynickel share_total_Ylead share_total_Ybauxite share_total_Ycopper share_total_Yphosphate
+###     share_total_Ytin share_total_Yzinc share_total_Ysilver share_total_Yiron share_total_Ygold)	
+
+# Define the list of resource columns for share_total_Y
+share_columns = [
+    :share_total_Ytimber, :share_total_Yoil, :share_total_Yng, :share_total_Ycoal, 
+    :share_total_Ynickel, :share_total_Ylead, :share_total_Ybauxite, :share_total_Ycopper, 
+    :share_total_Yphosphate, :share_total_Ytin, :share_total_Yzinc, :share_total_Ysilver, 
+    :share_total_Yiron, :share_total_Ygold
+]
+# Compute the row-wise sum for `share_total_Ysuboil`
+pwt_data[!, :share_total_Ysuboil] = [sum(skipmissing(row)) for row in eachrow(pwt_data[!, share_columns])]
+
+# Stata gives value 0 when share values are missing, while Julia returns missing for this column.
+# We give value 0 to every row of this column that has missing values to reproduce the results from the do file.
+# Replace missing values in the `:share_total_Ysuboil` column with 0
+# pwt_data[ismissing.(pwt_data[!, :share_total_Ysuboil]), :share_total_Ysuboil] .= 0
+
+
+
+# They do:
+### table year, c(n share_total_Ytimber mean share_total_Ytimber)		
+### table year, c(n share_total_Ysuboil mean share_total_Ysuboil)		
+
+# Group by year and compute count and mean for `share_total_Ytimber`
+summary_timber = combine(groupby(pwt_data, :year),
+    :share_total_Ytimber => x -> sum(.!ismissing.(x)) => :n_share_total_Ytimber,
+    :share_total_Ytimber => mean => :mean_share_total_Ytimber
+)
+# Display the `summary_timber` table
+# println(summary_timber)
+
+# Group by year and compute count and mean for `share_total_Ysuboil`
+summary_suboil = combine(groupby(pwt_data, :year),
+    :share_total_Ysuboil => x -> sum(.!ismissing.(x)) => :n_share_total_Ysuboil,
+    :share_total_Ysuboil => mean => :mean_share_total_Ysuboil
+)
+# Display the `summary_suboil` table
+# println(summary_suboil)
+
+
+
+# They do:
+### egen phi_NR   = rsum(phi_NR_timber phi_NR_subsoil phi_NR_crop_pq_a phi_NR_pasture) 
+
+# Define the columns to sum
+phi_NR_columns = [:phi_NR_timber, :phi_NR_subsoil, :phi_NR_crop_pq_a, :phi_NR_pasture]
+# Compute the row-wise sum for `phi_NR`, treating missing rows as 0
+pwt_data[!, :phi_NR] = [sum(skipmissing(row), init=0.0) for row in eachrow(pwt_data[!, phi_NR_columns])]
+# Inspect the results
+# println(first(pwt_data[:, [:phi_NR_timber, :phi_NR_subsoil, :phi_NR_crop_pq_a, :phi_NR_pasture, :phi_NR]], 10))
+
+
+
+# They do:
+### great, moving on: scalar maxyear = 2006	
+### table year if phi_NR~=0, c(n phi_NR_timber n phi_NR_subsoil n phi_NR_crop_pq_a n phi_NR_pasture n phi_NR)
+
+# Define maxyear
+maxyear = 2006
+
+# Filter rows where `phi_NR` is not 0
+filtered_data = filter(row -> row.phi_NR != 0, pwt_data)
+# Group and summarize by year
+summary_table = combine(
+    groupby(filtered_data, :year),
+    :phi_NR_timber => (x -> sum(.!ismissing.(x))) => :n_phi_NR_timber,
+    :phi_NR_subsoil => (x -> sum(.!ismissing.(x))) => :n_phi_NR_subsoil,
+    :phi_NR_crop_pq_a => (x -> sum(.!ismissing.(x))) => :n_phi_NR_crop_pq_a,
+    :phi_NR_pasture => (x -> sum(.!ismissing.(x))) => :n_phi_NR_pasture,
+    :phi_NR => (x -> sum(.!ismissing.(x))) => :n_phi_NR
+)
+
+# Checking the summary table for inspection
+println(summary_table)
+
+
+
+
+# They do
+### keep if year>=minyear & year<maxyear
+### sort country year
+### gen countrym = countrycode
+### keep phi_NR phi_NR_timber phi_NR_subsoil phi_NR_crop_pq_a phi_NR_pasture countrycode year country
+
+# Filter rows by `minyear` and `maxyear`
+pwt_data = filter(row -> row.year >= minyear && row.year < maxyear, pwt_data)
+# Sort the DataFrame by `country` and `year`
+sort!(pwt_data, [:country, :year])
+# Create a new column `countrym` as a copy of `countrycode`
+pwt_data[!, :countrym] = pwt_data[!, :countrycode]
+# Select only the relevant columns to keep
+columns_to_keep = [:country, :countrycode, :year,  :phi_NR_timber, :phi_NR_subsoil, :phi_NR_crop_pq_a, :phi_NR_pasture, :phi_NR ]
+pwt_data = select(pwt_data, columns_to_keep)
+
+
+#Save DataFrame to a CSV file
+CSV.write("pwt_data.csv", pwt_data)

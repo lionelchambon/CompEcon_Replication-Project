@@ -13,6 +13,7 @@ using Statistics
 using CSV
 using Plots
 using PrettyTables
+using Weave
 
 # We are going to use the array benchmark_76 of the common file.
 include("country_samples.jl")
@@ -259,6 +260,7 @@ end
 
 years_of_interest = [1970, 1980, 1990, 2000]
 data_tab3 = filter(row -> row.year in years_of_interest, data_tab3)
+
 CSV.write("output/table3_repl.csv", data_tab3)
 
 # Function to create and save the HTML table
@@ -279,6 +281,92 @@ CSV.write("output/table3_repl.csv", data_tab3)
 #tab3_csv = "output/table3_repl.csv"  
 #tab3_html = "output/table3_repl.html"  
 #create_table_3(tab3_csv, tab3_html)
+
+# Rounding : 
+rounded_data_tab_3 = round.(data_tab3, digits=3)
+
+# Changing the names so that it is smaller : 
+
+# names(rounded_data_tab_3)[1] 
+# names(rounded_data_tab_3)[2] 
+# names(rounded_data_tab_3)[3] 
+# names(rounded_data_tab_3)[4] 
+# names(rounded_data_tab_3)[5] 
+# names(rounded_data_tab_3)[6] 
+# 
+# names(rounded_data_tab_3)[7]
+# names(rounded_data_tab_3)[8]
+# names(rounded_data_tab_3)[9] 
+# names(rounded_data_tab_3)[10]
+# Doing it in one command : 
+rename!(rounded_data_tab_3, Dict(
+    :year => "Year",
+    :Var_QMPK => "Var_1",
+    :Var_VMPK => "Var_2",
+    :Var_phi => "Var_3",
+    :Var_Y_div_K => "Var_4",
+    :Var_PY_div_PK => "Var_5",
+    :Cov_phi_Y_div_K => "Cov_1",
+    :Cov_Y_div_K_PY_div_PK => "Cov_2",
+    :Cov_phi_PY_div_PK => "Cov_3",
+    :Cov_QMPK_PY_div_PK => "Cov_4"
+))
+
+# rounded_data_tab_3
+
+# Display the result
+# println(latex_output)
+# Can we find a way to export this into the output folder?
+# Yes :
+
+"""
+The function `create_table_3()` creates a `pdf` containing the replication result of the Figure 3.
+
+The `pdf` file is created within an `output` folder.
+
+"""
+function create_table_3()
+
+    write("output/table_3.jmd", """
+---
+title: "Table 3"
+author: CHAMBON L., COMPERAT E., GUGELMO CAVALHEIRO DIAS P.
+date: 2024-01-06
+output: pdf_document
+---
+This file presents the table 3 obtained from our replication attempt.
+
+We changed he names of the columns for presentation convenience.
+
+```{julia}
+using PrettyTables
+using Replication_Monge_et_al_2019
+using Markdown
+using Latexify
+```
+
+```{julia}
+Replication_Monge_et_al_2019.rounded_data_tab_3
+```
+
+""")
+
+    weave("output/table_3.jmd"; doctype = "md2pdf", out_path = "output")    
+end
+
+
+"""
+The function `delete_table_3()` deletes the `pdf` file and oher building blocks containing
+the replication result of Table 3, if the present working directory has a folder `output` containing it.
+"""
+function delete_table_3()
+    rm("output/table_3.aux")
+    rm("output/table_3.jmd")
+    rm("output/table_3.log")
+    rm("output/table_3.out")
+    rm("output/table_3.pdf")
+    rm("output/table_3.tex")
+end
 
 ### Table 4 & 5
 
@@ -326,9 +414,9 @@ data_tab4and5.open .= Int.(data_tab4and5.open .== 1.0)
 
 # Next, computing relevant output:
 
- # First, creating bins like in the paper
+# First, creating bins like in the paper
 
- function create_year_bins(year)
+function create_year_bins(year)
     if year >= 1970 && year <= 1975
         return "1970–1975"
     elseif year >= 1976 && year <= 1980
@@ -403,20 +491,77 @@ desired_order = [:QMPK_open, :QMPK_closed, :QMPK_t_stat, :VMPK_open, :VMPK_close
 # Reorder columns
 tab4_repl = select(tab4, desired_order...)
 
-println(tab4_repl)
+# println(tab4_repl)
 CSV.write("output/table4_repl.csv", tab4_repl)
 
 # Here, we should have : 
+rounded_data_tab_4 = round.(tab4_repl, digits=3)
+names(rounded_data_tab_4)
 
-# function create_table_4()
-#     ...
-# end
+rename!(rounded_data_tab_4, Dict(
+    :QMPK_open => "QMPK_1",
+    :QMPK_closed => "QMPK_2",
+    :QMPK_t_stat => "QMPK_3",
+    :VMPK_open => "VMPK_1",
+    :VMPK_closed => "VMPK_2",
+    :VMPK_t_stat => "VMPK_3",
+    :Obervations_open => "Obs_1",
+    :Observations_closed => "Obs_2"
+))
+
+"""
+The function `create_table_4()` creates a `pdf` containing the replication result of the Figure 3.
+
+The `pdf` file is created within an `output` folder.
+
+"""
+function create_table_4()
+    write("output/table_4.jmd", """
+---
+title: "Table 4"
+author: CHAMBON L., COMPERAT E., GUGELMO CAVALHEIRO DIAS P.
+date: 2024-01-06
+output: pdf_document
+---
+This file presents the table 4 obtained from our replication attempt.
+
+We changed he names of the columns for presentation convenience.
+
+```{julia}
+using PrettyTables
+using Replication_Monge_et_al_2019
+using Markdown
+using Latexify
+```
+
+```{julia}
+Replication_Monge_et_al_2019.rounded_data_tab_4
+```
+
+""")
+    weave("output/table_4.jmd"; doctype = "md2pdf", out_path = "output")
+end
+
+
+"""
+The function `delete_table_4()` deletes the `pdf` file and oher building blocks containing
+the replication result of Table 4, if the present working directory has a folder `output` containing it.
+"""
+function delete_table_4()
+    rm("output/table_4.aux")
+    rm("output/table_4.jmd")
+    rm("output/table_4.log")
+    rm("output/table_4.out")
+    rm("output/table_4.pdf")
+    rm("output/table_4.tex")
+end
+
 
 # For the last table of Section III, we repeat the exercise for factor shares, output-to-capital ratios, and relative prices:
 
 # First, adding variables of interest:
 
-data_tab5 = data_tab4and5  
+data_tab5 = copy(data_tab4and5)
 data_tab5[:, :phi] = 1 .- data_tab5.labsh .- data_tab5.phi_NR  
 data_tab5[:, :Y_div_K] = data_tab5.rgdpo ./ data_tab5.ck       
 data_tab5[:, :P_Y_div_P_K] = data_tab5.pl_gdpo ./ data_tab5.pl_k  
@@ -483,8 +628,61 @@ rename!(tab5_repl, Dict(
 println(tab5_repl)
 CSV.write("output/table5_repl.csv", tab5_repl)
 
-# Here, we should have
+# Rounding : 
+rounded_data_5 = copy(tab5_repl)
+rounded_data_5[:,2:end] = round.(tab5_repl[:,2:end], digits = 3)
+rounded_data_5
 
-# function create_table_5()
-#     ...
-# end
+# Shortening names : 
+names(rounded_data_5)
+rename!(rounded_data_5, Dict(
+    :"φ (Open)" => "phi 1", :"φ (Closed)" => "phi 2", :"φ t-stat" => "phi 3",
+    :"Y/K (Open)" => "Y/K 1", :"Y/K (Closed)" => "Y/K 2", :"Y/K t-stat" => "Y/K 3",
+    :"P_Y/P_K (Open)" => "Py/Pk 1", :"P_Y/P_K (Closed)" => "Py/Pk 2", :"P_Y/P_K t-stat" => "Py/Pk 3"
+))
+
+"""
+The function `create_table_5()` creates a `pdf` containing the replication result of the Figure 5.
+
+The `pdf` file is created within an `output` folder.
+
+"""
+function create_table_5()
+    write("output/table_5.jmd", """
+---
+title: "Table 5"
+author: CHAMBON L., COMPERAT E., GUGELMO CAVALHEIRO DIAS P.
+date: 2024-01-06
+output: pdf_document
+---
+This file presents the table 5 obtained from our replication attempt.
+
+We changed he names of the columns for presentation convenience.
+
+```{julia}
+using PrettyTables
+using Replication_Monge_et_al_2019
+using Markdown
+using Latexify
+```
+
+```{julia}
+Replication_Monge_et_al_2019.rounded_data_
+```
+
+""")
+    weave("output/table_5.jmd"; doctype = "md2pdf", out_path = "output")
+end
+
+"""
+The function `delete_table_5()` deletes the `pdf` file and oher building blocks containing
+the replication result of Table 5, if the present working directory has a folder `output` containing it.
+"""
+function delete_table_5()
+    rm("output/table_5.aux")
+    rm("output/table_5.jmd")
+    rm("output/table_5.log")
+    rm("output/table_5.out")
+    rm("output/table_5.pdf")
+    rm("output/table_5.tex")
+end

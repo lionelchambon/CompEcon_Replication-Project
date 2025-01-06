@@ -163,34 +163,65 @@ push!(Table_1, Observationsrow)
 
 CSV.write("output/table_1.csv", Table_1)
 
+rounded_data_tab_1 = copy(Table_1)
+rounded_data_tab_1[:,2:5] = round.(Table_1[:,2:5], digits = 2)
+# rounded_data_tab_1
+
 """
 The function `create_table_1()` creates a `pdf` containing the replication result of the Figure 2.
 
 The `pdf` file is created within an `output` folder.
 
 """
+# function create_table_1()
+#     # Create the latex code and save it : 
+#     Table_1_tex = latexify(Table_1; env = :table, booktabs = true, latex = false)
+#     write("output/table_1.tex", Table_1_tex)
+# 
+#     # Wrap the latex code in a template :
+#     beginning = "\\documentclass{article} \n \\usepackage{amssymb,amsmath}
+#     \\usepackage{booktabs} \n \\usepackage{pdflscape}
+#     \\begin{document} \n \\begin{landscape}
+#     \\centering"
+#     ending = "\\end{landscape} \n \\end{document}"
+#     write("output/doc_table_1.tex",beginning)
+#     io = open("output/doc_table_1.tex", "a")
+#     write(io,"\n", Table_1_tex)
+#     write(io, ending)
+#     close(io)
+#     # rm("output/doc_table_1.tex")   
+# 
+#     # Compile the latex code :
+#     Base.run(pipeline(`pwd`,`cd output/`,`pdflatex --interaction=batchmode output/doc_table_1.tex`));
+#     Base.run(`mv doc_table_1.pdf output/doc_table_1.pdf`);
+#     Base.run(`rm doc_table_1.aux doc_table_1.log`);
+# end
+
 function create_table_1()
-    # Create the latex code and save it : 
-    Table_1_tex = latexify(Table_1; env = :table, booktabs = true, latex = false)
-    write("output/table_1.tex", Table_1_tex)
+    write("output/table_1.jmd", """
+---
+title: "Table 1"
+author: CHAMBON L., COMPERAT E., GUGELMO CAVALHEIRO DIAS P.
+date: 2024-01-06
+output: pdf_document
+---
+This file presents the table 1 obtained from our replication attempt.
 
-    # Wrap the latex code in a template :
-    beginning = "\\documentclass{article} \n \\usepackage{amssymb,amsmath}
-    \\usepackage{booktabs} \n \\usepackage{pdflscape}
-    \\begin{document} \n \\begin{landscape}
-    \\centering"
-    ending = "\\end{landscape} \n \\end{document}"
-    write("output/doc_table_1.tex",beginning)
-    io = open("output/doc_table_1.tex", "a")
-    write(io,"\n", Table_1_tex)
-    write(io, ending)
-    close(io)
-    # rm("output/doc_table_1.tex")   
+We changed he names of the columns for presentation convenience.
 
-    # Compile the latex code :
-    Base.run(pipeline(`pwd`,`cd output/`,`pdflatex --interaction=batchmode output/doc_table_1.tex`));
-    Base.run(`mv doc_table_1.pdf output/doc_table_1.pdf`);
-    Base.run(`rm doc_table_1.aux doc_table_1.log`);
+```{julia}
+using PrettyTables
+using Replication_Monge_et_al_2019
+using Markdown
+using Latexify
+```
+
+```{julia}
+Replication_Monge_et_al_2019.rounded_data_tab_1
+```
+
+""")
+    weave("output/table_1.jmd"; doctype = "md2pdf", out_path = "output")
 end
 
 """
@@ -199,9 +230,13 @@ the replication result of Figure 1, if the present working directory has a folde
 """
 
 function delete_table_1()
-    rm("output/doc_table_1.pdf")
-    rm("output/doc_table_1.tex")
+    rm("output/table_1.aux")
+    rm("output/table_1.jmd")
+    rm("output/table_1.log")
+    rm("output/table_1.out")
+    rm("output/table_1.pdf")
     rm("output/table_1.tex")
+
 end
 
 # create_table_1()

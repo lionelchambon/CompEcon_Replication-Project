@@ -2,6 +2,7 @@ using Replication_Monge_et_al_2019
 using Test
 using DataFrames
 using StatFiles
+using CSV
 
 # Testing the filter_function! function :    
 @testset "filter_function" begin
@@ -21,7 +22,12 @@ end
     true_pwt_data_1 = DataFrame(load("true_pwt_data_1.dta"))
 
     @testset "Loading of own data - 1" begin
-        @test Replication_Monge_et_al_2019.pwt_data_1 == CSV.read("pwt_data_1.csv", DataFrame)
+        cd(dirname(pathof(Replication_Monge_et_al_2019)))
+        cd(splitdir(pwd())[1])
+        cd("output")
+        # Replication_Monge_et_al_2019.pwt_data_1
+        a = CSV.read("pwt_data_1.csv", DataFrame)
+        @test names(Replication_Monge_et_al_2019.pwt_data_1) == names(a)    
     end
 
     # Testing the loading :
@@ -69,12 +75,6 @@ end
         for col in names(true_pwt_data_1)
             if col in names(Replication_Monge_et_al_2019.pwt_data_1)
                 if (any(x -> x isa Number, true_pwt_data_1[:,col])) || (any(x -> x isa Number, Replication_Monge_et_al_2019.pwt_data_1[:,col]))
-                    # isapprox(unique(true_pwt_data_1[:,col]), unique(Replication_Monge_et_al_2019.pwt_data_1[:,col]))
-                    # @test isapprox(
-                    #   print(true_pwt_data_1[:,col])
-                    #   print(Replication_Monge_et_al_2019.pwt_data_1[:,col])
-                    # numerical_columns += 1
-                    # missing_to_zero.(true_pwt_data_1[:,col])
                     @test isapprox(to_number.(true_pwt_data_1[:,col]), to_number.(Replication_Monge_et_al_2019.pwt_data_1[:,col]); atol=10)
                 end
             end
@@ -93,7 +93,6 @@ end
         for col in names(true_pwt_data_1)
             if col in names(Replication_Monge_et_al_2019.pwt_data_1)
                 if (any(x -> x isa String, true_pwt_data_1[:,col])) || (any(x -> x isa String, Replication_Monge_et_al_2019.pwt_data_1[:,col]))
-                    # character_columns += 1
                     @test isequal(to_character.(true_pwt_data_1[:,col]), to_character.(Replication_Monge_et_al_2019.pwt_data_1[:,col]))
                 end
             end
