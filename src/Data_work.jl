@@ -310,7 +310,12 @@ pwt_data_1 = copy(pwt_data)
 # Save DataFrame to a CSV file
 CSV.write("output/pwt_data_1.csv", pwt_data_1)
 
-
+# Check : 
+# a = CSV.read("output/pwt_data_1.csv", DataFrame)
+# pwt_data_1 == a 
+# isequal(pwt_data_1,a)
+# names(a) == names(pwt_data_1)
+# isapprox(a, pwt_data_1)
 
 ###################################################################################################
 
