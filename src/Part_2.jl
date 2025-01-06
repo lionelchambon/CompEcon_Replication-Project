@@ -288,8 +288,8 @@ data_fig1_b = filter(row -> row.country in benchmark_wo_oil && (row.year == 2000
 
 # Computing fits:
 
-fit_panel_a = fit(data_fig1_a.gdp_per_worker, data_fig1_a.phi_NR, 1)
-fit_panel_b = fit(data_fig1_b.gdp_per_worker, data_fig1_b.phi_NR, 1)
+fit_panel_a = Polynomials.fit(data_fig1_a.gdp_per_worker, data_fig1_a.phi_NR, 1)
+fit_panel_b = Polynomials.fit(data_fig1_b.gdp_per_worker, data_fig1_b.phi_NR, 1)
 
 trendline_panel_a = fit_panel_a[1] .+ fit_panel_a[2] .* data_fig1_a.gdp_per_worker
 trendline_panel_b = fit_panel_b[1] .+ fit_panel_b[2] .* data_fig1_b.gdp_per_worker
@@ -458,7 +458,7 @@ function create_figure_3()
         label="Using rents", color=:red, marker=:square, alpha=0.8,
         xlabel="GDP per worker", ylabel="Natural resource output share", legend=:topright)
 
-    fit_NR = fit(data_fig3.gdp_per_worker, data_fig3.phi_NR, 1)  
+    fit_NR = Polynomials.fit(data_fig3.gdp_per_worker, data_fig3.phi_NR, 1)  
 
     trendline_NR = fit_NR[1] .+ fit_NR[2] .* data_fig3.gdp_per_worker
 

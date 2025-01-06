@@ -148,7 +148,8 @@ minyear = 1970
 maxyear = 2010
 pwt_data[!, :country] .= replace.(pwt_data.country, "Cote d`Ivoire" => "Cote dIvoire")
 
-
+pwt_data_0 = copy(pwt_data)
+CSV.write("output/pwt_data_0.csv", pwt_data_0)
 
 # ###############################################
 # # (1) Merge with timber_and_subsoil_rents.dta #
@@ -306,9 +307,18 @@ select(montenegro_data, relevant_columns) #the numbers match
 # At this point, pwt_data is what we want. We will call it 
 pwt_data_1 = copy(pwt_data)
 
-######################################
-# (2) Merge with crop_rent_input.dta #
-######################################
+# Save DataFrame to a CSV file
+CSV.write("output/pwt_data_1.csv", pwt_data_1)
+
+
+
+###################################################################################################
+
+
+
+### ######################################
+### # (2) Merge with crop_rent_input.dta #
+### ######################################
 
 # Load crop_land_rent_input.dta
 crop_data = DataFrame(load("src/data/crop_land_rent_input.dta"))
@@ -828,17 +838,20 @@ summary_table = combine(
 # Drop the `_merge` column
 select!(pwt_data, Not(:_merge))
 
+# Saving it : 
 pwt_data_2 = copy(pwt_data)
+CSV.write("output/pwt_data_2.csv", pwt_data_2)
 
 
 
 
+###################################################################################################
 
 
 
-#########################################
-# (3) Merge with pasture_rent_input.dta #
-#########################################
+### #########################################
+### # (3) Merge with pasture_rent_input.dta #
+### #########################################
 
 # They do:
 ### codebook country	
@@ -847,7 +860,8 @@ pwt_data_2 = copy(pwt_data)
 ### keep if year>=minyear & year<maxyear 	
 
 # Load the pasture rent data
-pasture_data = DataFrame(load("pasture_land_rent_input.dta"))
+pasture_data = DataFrame(load("src/data/pasture_land_rent_input.dta"))
+
 # Merge with the main DataFrame
 pwt_data = outerjoin(
     pwt_data, 
@@ -983,10 +997,10 @@ pwt_data[!, :pasture_rent] .= ifelse.(
     pwt_data.pasture_rent
 )
 
-#Checking
+# Checking
 #   luxembourg_rows_updated = filter(row -> row.country == "Luxembourg" && row.year < 2000, pwt_data)
 #   println(first(select(luxembourg_rows_updated, [:year, :country, :pasture_rent, :mpasture_rent_lux]), 10)) 
-#The numbers check.
+# The numbers check.
 
 
 
@@ -1280,3 +1294,7 @@ pwt_data = filter(
 pwt_data[!, :phi_NR_pasture] .= pwt_data.pasture_rent ./ pwt_data.nominal_gdp
 # Inspect the first 10 rows of relevant columns
 println(first(select(pwt_data, [:country, :year, :pasture_rent, :nominal_gdp, :phi_NR_pasture]), 10))
+
+# Saving it : 
+pwt_data_3 = copy(pwt_data)
+CSV.write("output/pwt_data_3.csv", pwt_data_3)
