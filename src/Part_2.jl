@@ -318,8 +318,8 @@ data_fig1 = leftjoin(df_pwt, df_phi_NR, on=[:country, :year])
 # First, I compute GDP per worker by determining the number of workers, then dividing real GDP:
 
 data_fig1 = filter(row -> !ismissing(row.labsh), data_fig1)
-data_fig1[:, :workers] = data_fig1.pop .* (1 .- data_fig1.labsh)
-data_fig1[:, :gdp_per_worker] = data_fig1.rgdpo ./ data_fig1.workers
+data_fig1[:, :workers] = data_fig1.pop .* (data_fig1.labsh)
+data_fig1[:, :gdp_per_worker] = data_fig1.cgdpo ./ data_fig1.workers
 
 # Cleaning to drop missing values and ensure corresponding types:
 
@@ -410,17 +410,17 @@ The `png` file is created within an `output` folder.
 """
 function create_figure_2()
     data_fig2 = filter(row -> (row.country in benchmark_wo_oil) && (1970 <= row.year <= 2005), data_fig1)
-    data_fig2 = dropmissing(data_fig2, [:rgdpo])
+    data_fig2 = dropmissing(data_fig2, [:cgdpo])
     
     # Computing quartiles:
-    quartile_thresholds = quantile(data_fig2.rgdpo, [0.25, 0.50, 0.75])
+    quartile_thresholds = quantile(data_fig2.cgdpo, [0.25, 0.50, 0.75])
     
     data_fig2[!, :quartile] = map(row -> begin
-        if row.rgdpo <= quartile_thresholds[1]
+        if row.cgdpo <= quartile_thresholds[1]
             "First quartile"
-        elseif row.rgdpo <= quartile_thresholds[2]
+        elseif row.cgdpo <= quartile_thresholds[2]
             "Second quartile"
-        elseif row.rgdpo <= quartile_thresholds[3]
+        elseif row.cgdpo <= quartile_thresholds[3]
             "Third quartile"
         else
             "Fourth quartile"
@@ -485,7 +485,7 @@ data_fig3 = filter(row -> row.country in benchmark_wo_oil && (row.year == 2005),
 
 data_fig3 = filter(row -> !ismissing(row.labsh), data_fig3)
 data_fig3[:, :workers] = data_fig3.pop .* (1 .- data_fig3.labsh)
-data_fig3[:, :gdp_per_worker] = data_fig3.rgdpo ./ data_fig3.workers
+data_fig3[:, :gdp_per_worker] = data_fig3.cgdpo ./ data_fig3.workers
 
 CSV.write("output/data_fig3.csv", data_fig3)
 

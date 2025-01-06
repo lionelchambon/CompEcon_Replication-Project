@@ -55,7 +55,7 @@ end
 
 # Next, we compute QMKP and VMPK as described in sections II and III of the paper:
 
-data_fig4.QMPK = (1 .- data_fig4.labsh .- data_fig4.phi_NR) .* (data_fig4.rgdpo ./ data_fig4.ck)
+data_fig4.QMPK = (1 .- data_fig4.labsh .- data_fig4.phi_NR) .* (data_fig4.cgdpo ./ data_fig4.ck)
 data_fig4.VMPK = data_fig4.QMPK .* (data_fig4.pl_gdpo ./ data_fig4.pl_k)
 
 # We briefly test that the comuputed MPK variables are indeed present in the dataset:
@@ -190,7 +190,7 @@ end
 data_fig4[:, :log_QMPK] = log.(data_fig4.QMPK)
 data_fig4[:, :log_VMPK] = log.(data_fig4.VMPK)
 data_fig4[:, :log_phi] = log.(1 .- data_fig4.labsh .- data_fig4.phi_NR)
-data_fig4[:, :log_Y_div_K] = log.(data_fig4.rgdpo ./ data_fig4.ck)
+data_fig4[:, :log_Y_div_K] = log.(data_fig4.cgdpo ./ data_fig4.ck)
 data_fig4[:, :log_PY_div_PK] = log.(data_fig4.pl_gdpo ./ data_fig4.pl_k)
 
 grouped = groupby(data_fig4, :year)
@@ -563,7 +563,7 @@ end
 
 data_tab5 = copy(data_tab4and5)
 data_tab5[:, :phi] = 1 .- data_tab5.labsh .- data_tab5.phi_NR  
-data_tab5[:, :Y_div_K] = data_tab5.rgdpo ./ data_tab5.ck       
+data_tab5[:, :Y_div_K] = data_tab5.cgdpo ./ data_tab5.ck       
 data_tab5[:, :P_Y_div_P_K] = data_tab5.pl_gdpo ./ data_tab5.pl_k  
 
 grouped_tab5 = groupby(data_tab5, [:year_bin, :open])
