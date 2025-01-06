@@ -25,3 +25,49 @@ run()
 # to delete all the output : 
 delete_all()
 ```
+
+# Replication results : 
+
+We managed to replicate the whole replication package provided by the authors in Stata.
+This file is provided in the `output` folder, under the name `pwt_data_3.csv`. 
+
+We also managed to partially reproduce different figures and tables, namely : 
+
+- Figure 1
+- Figure 2
+- Figure 3
+- Figure 4
+
+- Table 1  
+- Table 3
+- Table 4
+- Table 5
+
+# Tests procedure and results 
+
+We used the `Test` package to test the quality of the replicated data, and compare it with the data from the Replication package. 
+In this sense, although the tests are failing in the GitHub repository, it does no mean that we did not manage to obtain similar results to the authors. 
+
+Once we are in the folder of the repository, we can run the replication tests.
+
+When running,
+
+````
+Pkg.test()
+```
+
+We obtain : 
+
+![Tests](./tests.png)
+
+And when running 
+
+```
+include("Replication_Monge_et_al_2019.extensive_test")
+```
+
+We obtain : 
+
+![Extensive Tests](./extensive_tests.png)
+
+The tests are more detailed in the dedicated section of the website of the package.

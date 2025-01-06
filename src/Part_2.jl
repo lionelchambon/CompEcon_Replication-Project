@@ -179,12 +179,7 @@ rounded_data_tab_1[:,1] = [ "NR",
                             "Obs"]
 rounded_data_tab_1
 
-"""
-The function `create_table_1()` creates a `pdf` containing the replication result of the Figure 2.
 
-The `pdf` file is created within an `output` folder.
-
-"""
 # function create_table_1()
 #     # Create the latex code and save it : 
 #     Table_1_tex = latexify(Table_1; env = :table, booktabs = true, latex = false)
@@ -209,6 +204,12 @@ The `pdf` file is created within an `output` folder.
 #     Base.run(`rm doc_table_1.aux doc_table_1.log`);
 # end
 
+"""
+The function `create_table_1()` creates a `pdf` containing the replication result of the Figure 1.
+
+The `pdf` file is created within an `output` folder.
+
+"""
 function create_table_1()
     write("output/table_1.jmd", """
 ---
@@ -219,7 +220,7 @@ output: pdf_document
 ---
 This file presents the table 1 obtained from our replication attempt.
 
-We changed he names of the columns for presentation convenience.
+We changed the names of the columns for presentation convenience.
 
 ```{julia}
 using PrettyTables
