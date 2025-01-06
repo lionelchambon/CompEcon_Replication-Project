@@ -20,6 +20,7 @@
 
 using DataFrames
 using StatFiles
+using StatsBase
 using Missings
 using CSV
 using Statistics
@@ -828,3 +829,454 @@ summary_table = combine(
 select!(pwt_data, Not(:_merge))
 
 pwt_data_2 = copy(pwt_data)
+
+
+
+
+
+
+
+#########################################
+# (3) Merge with pasture_rent_input.dta #
+#########################################
+
+# They do:
+### codebook country	
+### sort country year
+### merge country year using "pasture_land_rent_input.dta"
+### keep if year>=minyear & year<maxyear 	
+
+# Load the pasture rent data
+pasture_data = DataFrame(load("pasture_land_rent_input.dta"))
+# Merge with the main DataFrame
+pwt_data = outerjoin(
+    pwt_data, 
+    pasture_data, 
+    on=[:country, :year], 
+    makeunique=true, 
+    indicator=:_merge
+)
+# Filter rows within the year range
+pwt_data = filter(row -> row.year >= minyear && row.year < maxyear, pwt_data)
+
+
+# They do:
+### tab _merge if nominal_gdp~=.
+### gen cc3 = countrycode + " " + country
+### tabulate cc3 if _merge==1 & nominal_gdp~=. & year<2006
+### tabulate cc3 if _merge==2 & nominal_gdp~=. & year<2006
+### tab _merge
+
+
+# Tabulate `_merge` column
+merge_counts = combine(groupby(DataFrame(_merge=pwt_data._merge), :_merge), nrow => :count)
+# Print the tabulation
+println(merge_counts)
+# Create `cc3` column
+pwt_data[!, :cc3] = string.(pwt_data.countrycode, " ", pwt_data.country)
+# Filter and tabulate for _merge == 1
+filtered_data1 = filter(row -> row._merge == 1 && !ismissing(row.nominal_gdp) && row.year < 2006, pwt_data)
+
+# Tabulate `cc3` for `_merge == 1`
+println(countmap(filtered_data1[!, :cc3]))
+# Count occurrences of each value in the `cc3` column
+cc3_counts = combine(groupby(filtered_data1, :cc3), nrow => :count)
+# Print the counts
+println(cc3_counts)
+
+
+
+
+# Note from the authors:
+# Further we have a collection of countries for which we have not individual data per country but joint data on a set country pairs for a selected number of years: 
+#     (a) Belgium (30 periods), Luxembourg (30 periods), 
+#     (b) Czech Rep (3 periods), Slovak Republic (3 periods), 
+#     (c) Serbia (16 periods), Montenegro (16 periods), 
+
+
+
+# (a) Belgium and Luxembourg:
+
+# Remark from the authors:
+# We notice that the world bank provides timber_and_subsoil rents jointly for
+#   Belgium-Luxembourg from 1966 to 1999, and then separately for Belgium from 2000 to 2001,
+#   and for Luxembourg from 2000 to 2011. Next, we impute pasture rents for Belgium and 
+#   Luxembourg separately by assuming that for years before 2000 these are split in 
+#   the Belgium-Luxembourg variable  as they are split between the Belgium and Luxemburg
+#   in 2000.
+
+
+# They do:
+###  gen  bel_2000=pasture_rent if country=="Belgium"     & year==2000
+###  gen  lux_2000=pasture_rent if country=="Luxembourg" & year==2000
+###  egen mbel_2000=max(bel_2000)
+###  egen mlux_2000=max(lux_2000)
+   
+
+# Create new columns for bel_2000 and lux_2000
+pwt_data[:, :bel_2000] = ifelse.((pwt_data[:, :country] .== "Belgium") .& (pwt_data[:, :year] .== 2000), pwt_data[:, :pasture_rent], missing)
+pwt_data[:, :lux_2000] = ifelse.((pwt_data[:, :country] .== "Luxembourg") .& (pwt_data[:, :year] .== 2000), pwt_data[:, :pasture_rent], missing)
+# Calculate the maximum values for bel_2000 and lux_2000
+mbel_2000 = maximum(skipmissing(pwt_data[:, :bel_2000]))
+mlux_2000 = maximum(skipmissing(pwt_data[:, :lux_2000]))
+# Assign the value to every row in the column
+pwt_data[:, :mbel_2000] = fill(mbel_2000, nrow(pwt_data))
+pwt_data[:, :mlux_2000] = fill(mlux_2000, nrow(pwt_data))
+
+
+# They do:
+### gen  share_bel_2000=mbel_2000/(mbel_2000+mlux_2000) 
+### gen pasture_rent_bel=share_bel_2000*pasture_rent if country=="Belgium-Luxembourg"
+### bys year: egen mpasture_rent_bel=max(pasture_rent_bel)
+### replace pasture_rent = mpasture_rent_bel if country=="Belgium" & year<2000	
+
+# Create share_bel_2000
+pwt_data[!, :share_bel_2000] .= pwt_data.mbel_2000 ./ (pwt_data.mbel_2000 .+ pwt_data.mlux_2000)
+# Compute pasture_rent_bel
+pwt_data[!, :pasture_rent_bel] .= ifelse.(
+    pwt_data.country .== "Belgium-Luxembourg",
+    pwt_data.share_bel_2000 .* pwt_data.pasture_rent,
+    missing
+)
+# Compute mpasture_rent_bel for each year
+mpasture_rent_bel = combine(
+    groupby(pwt_data, :year),
+    :pasture_rent_bel => (x -> isempty(skipmissing(x)) ? missing : only(skipmissing(x))) => :mpasture_rent_bel
+)
+# Add `mpasture_rent_bel` back to the main dataset
+pwt_data = leftjoin(pwt_data, mpasture_rent_bel, on=:year)
+
+# Replace `pasture_rent` with `mpasture_rent_bel` for Belgium before 2000
+pwt_data[!, :pasture_rent] .= ifelse.(
+    (pwt_data.country .== "Belgium") .&& (pwt_data.year .< 2000),
+    pwt_data.mpasture_rent_bel,
+    pwt_data.pasture_rent
+)
+
+#Checking
+#   belgium_rows_updated = filter(row -> row.country == "Belgium" && row.year < 2000, pwt_data)
+#    println(first(select(belgium_rows_updated, [:year, :country, :pasture_rent, :mpasture_rent_bel]), 10)) 
+# the numbers check
+
+
+
+# Now we do the same with Luxembourg
+# Create share_lux_2000
+pwt_data[!, :share_lux_2000] .= pwt_data.mlux_2000 ./ (pwt_data.mbel_2000 .+ pwt_data.mlux_2000)
+# Compute pasture_rent_lux
+pwt_data[!, :pasture_rent_lux] .= ifelse.(
+    pwt_data.country .== "Belgium-Luxembourg",
+    pwt_data.share_lux_2000 .* pwt_data.pasture_rent,
+    missing
+)
+# Compute mpasture_rent_lux for each year
+mpasture_rent_lux = combine(
+    groupby(pwt_data, :year),
+    :pasture_rent_lux => (x -> isempty(skipmissing(x)) ? missing : only(skipmissing(x))) => :mpasture_rent_lux
+)
+# Add `mpasture_rent_lux` back to the main dataset
+pwt_data = leftjoin(pwt_data, mpasture_rent_lux, on=:year)
+# Replace `pasture_rent` with `mpasture_rent_lux` for Luxembourg before 2000
+pwt_data[!, :pasture_rent] .= ifelse.(
+    (pwt_data.country .== "Luxembourg") .&& (pwt_data.year .< 2000),
+    pwt_data.mpasture_rent_lux,
+    pwt_data.pasture_rent
+)
+
+#Checking
+#   luxembourg_rows_updated = filter(row -> row.country == "Luxembourg" && row.year < 2000, pwt_data)
+#   println(first(select(luxembourg_rows_updated, [:year, :country, :pasture_rent, :mpasture_rent_lux]), 10)) 
+#The numbers check.
+
+
+
+
+# Sort by `country` and `year`
+sort!(pwt_data, [:country, :year])
+# Drop columns from `bel_2000` to `mpasture_rent_lux`
+select!(pwt_data, Not([:bel_2000, :lux_2000, :mbel_2000, :mlux_2000, :share_bel_2000, :pasture_rent_bel, :mpasture_rent_bel]))
+
+# Checking
+#   Filter rows
+#       bel_lux_rows = filter(
+#        row -> row.country in ["Belgium", "Luxembourg"],
+#        pwt_data
+#        )
+#   Inspecting rows
+#       println(select(bel_lux_rows, [:country, :countrycode, :year, :pasture_rent])) 
+# Numbers check
+
+
+
+
+
+
+# (b) Czech Rep. and Slovakia Rep.
+
+# Note from the authors:
+# Simlarly, the World Bank provides pasture land rents jointly for Czechoslovakia 
+# from 1966 to 1992, and then separately for Czech Rep. from 1993 to 2011 and 
+# Slovakia Rep. from 1993 to 2011. Next, we impute pasture rents for Czech Rep. and 
+# Slovakia Rep. separately by assuming that for years before 1993 these rents are split
+# in Czechoslovakia variable as they are split between the Czech Rep and the Slovakia Rep. 
+# in 1993.
+
+# They do:
+### gen  cze_1993=pasture_rent if country=="Czech Republic"  & year==1993
+### gen  slo_1993=pasture_rent if country=="Slovak Republic" & year==1993
+### egen mcze_1993=max(cze_1993)
+### egen mslo_1993=max(slo_1993)
+
+
+# Generate `cze_1993` and `slo_1993`
+pwt_data[!, :cze_1993] = ifelse.((pwt_data[!, :country] .== "Czech Republic") .& (pwt_data[!, :year] .== 1993), pwt_data[!, :pasture_rent], missing)
+pwt_data[!, :slo_1993] = ifelse.((pwt_data[!, :country] .== "Slovak Republic") .& (pwt_data[!, :year] .== 1993), pwt_data[!, :pasture_rent], missing)
+# Compute maximum values
+mcze_1993 = maximum(skipmissing(pwt_data[!, :cze_1993]))
+mslo_1993 = maximum(skipmissing(pwt_data[!, :slo_1993]))
+# Add the maximum values to the dataset (optional)
+pwt_data[!, :mcze_1993] .= mcze_1993
+pwt_data[!, :mslo_1993] .= mslo_1993
+
+
+# They do
+### gen  share_cze_1993=mcze_1993/(mcze_1993+mslo_1993) 
+### gen pasture_rent_cze=share_cze_1993*pasture_rent if country=="Czechoslovakia"
+### bys year: egen mpasture_rent_cze=max(pasture_rent_cze)
+### replace pasture_rent = mpasture_rent_cze if country=="Czech Republic" & year<1993	
+
+# Generate `share_cze_1993`
+share_cze_1993 = mcze_1993 / (mcze_1993 + mslo_1993)
+# Add as a new column
+pwt_data[!, :share_cze_1993] .= share_cze_1993
+# Generate `pasture_rent_cze` for Czechoslovakia
+pwt_data[!, :pasture_rent_cze] = ifelse.(
+    pwt_data[!, :country] .== "Czechoslovakia",
+    share_cze_1993 * pwt_data[!, :pasture_rent],
+    missing
+)
+# Filter rows where `pasture_rent_cze` is not missing
+filtered_data = filter(row -> !ismissing(row[:pasture_rent_cze]), pwt_data)
+# Compute max of `pasture_rent_cze` per year with an init value
+mpasture_rent_cze = combine(
+    groupby(filtered_data, :year),
+    :pasture_rent_cze => (x -> maximum(skipmissing(x); init=0)) => :mpasture_rent_cze
+)
+# Merge the max values back into the main dataset
+pwt_data = leftjoin(pwt_data, mpasture_rent_cze, on=:year)
+# Replace `pasture_rent` for Czech Republic before 1993
+pwt_data[!, :pasture_rent] = ifelse.(
+    (pwt_data[!, :country] .== "Czech Republic") .& (pwt_data[!, :year] .< 1993),
+    pwt_data[!, :mpasture_rent_cze],
+    pwt_data[!, :pasture_rent]
+)
+# Inspecting rows for Czechoslovakia and Czech Republic
+#   cze_rows = filter(row -> row[:country] in ["Czechoslovakia", "Czech Republic"], pwt_data)
+#   relevant_columns = [:country, :year, :pasture_rent, :pasture_rent_cze, :mpasture_rent_cze, :share_cze_1993]
+#   println(first(cze_rows[:, relevant_columns],10))
+# The numbers check
+
+
+
+#Now moving on with Slovakia
+#They do:
+### gen  share_slo_1993=mslo_1993/(mcze_1993+mslo_1993) 
+### gen pasture_rent_slo=share_slo_1993*pasture_rent if country=="Czechoslovakia"
+### bys year: egen mpasture_rent_slo=max(pasture_rent_slo)
+### replace pasture_rent = mpasture_rent_slo if country=="Slovak Republic" & year<1993
+
+# Generate `share_slo_1993`
+share_slo_1993 = mslo_1993 / (mcze_1993 + mslo_1993)
+# Add as a new column
+pwt_data[!, :share_slo_1993] .= share_slo_1993
+# Generate `pasture_rent_cze` for Czechoslovakia
+pwt_data[!, :pasture_rent_slo] = ifelse.(
+    pwt_data[!, :country] .== "Czechoslovakia",
+    share_slo_1993 * pwt_data[!, :pasture_rent],
+    missing
+)
+# Filter rows where `pasture_rent_cze` is not missing
+filtered_data = filter(row -> !ismissing(row[:pasture_rent_slo]), pwt_data)
+# Compute max of `pasture_rent_slo` per year with an init value
+mpasture_rent_slo = combine(
+    groupby(filtered_data, :year),
+    :pasture_rent_slo => (x -> maximum(skipmissing(x); init=0)) => :mpasture_rent_slo
+)
+# Merge the max values back into the main dataset
+pwt_data = leftjoin(pwt_data, mpasture_rent_slo, on=:year)
+# Replace `pasture_rent` for Czech Republic before 1993
+pwt_data[!, :pasture_rent] = ifelse.(
+    (pwt_data[!, :country] .== "Slovak Republic") .& (pwt_data[!, :year] .< 1993),
+    pwt_data[!, :mpasture_rent_slo],
+    pwt_data[!, :pasture_rent]
+)
+
+# Inspecting rows for Czechoslovakia and Slovakia
+#   slo_rows = filter(row -> row[:country] in ["Slovak Republic"], pwt_data)
+#   relevant_columns = [:country, :year, :pasture_rent, :pasture_rent_slo, :mpasture_rent_slo, :share_slo_1993]
+#   println(first(slo_rows[:, relevant_columns],10))
+# The numbers check
+
+
+
+# They do:
+### sort country year	
+### drop cze_1993-mpq_rent_a_slo
+### drop if country=="Czechoslovakia"
+
+
+# Sort the dataset by country and year
+pwt_data = sort(pwt_data, [:country, :year])
+# Drop the intermediate columns used for calculations
+select!(pwt_data, Not([:cze_1993, :slo_1993, :mcze_1993, :mslo_1993, :share_cze_1993, :share_slo_1993, :pasture_rent_cze, :pasture_rent_slo, :mpasture_rent_cze, :mpasture_rent_slo]))
+# Drop rows where the country is "Czechoslovakia"
+pwt_data = filter(row -> row[:country] != "Czechoslovakia", pwt_data)
+
+# Checking
+#     Check unique countries to ensure "Czechoslovakia" is removed
+#         println(unique(pwt_data[!, :country])) 
+#     Filter for rows belonging to Czech Republic and Slovak Republic
+#         czech_slovak_rows = filter(row -> row[:country] in ["Czech Republic", "Slovak Republic"], pwt_data)
+#     Select relevant columns for inspection
+#         relevant_columns = [:country, :year, :pasture_rent]
+#         println(first(czech_slovak_rows[:, relevant_columns], 10))
+# Everything matches
+
+
+
+# (c) Serbia and Montenegro
+
+# Note from the authors:
+# Finally, the World Bank provides pasture land rents jointly for Serbia and Montenegro 
+# from 1992 to 2005, and then separately for Serbia 2006 to 2011 and Montenegro 2006 to 2011.
+# Next, we impute pasture rents for Serbia and 
+# Montenegro separately by assuming that for years before 2006 these are split in 
+# the "Serbia and Montenegro" variable as they are split between Serbia and Montenegro
+# in 2006.
+
+
+# They do:
+### gen  serb_2006=pq_rent_a if country=="Serbia"     & year==2006
+### gen  mont_2006=pq_rent_a if country=="Montenegro" & year==2006
+### egen mserb_2006=max(serb_2006)
+### egen mmont_2006=max(mont_2006)
+
+
+# Filter rows for Serbia and Montenegro in 2006
+serbia_2006 = filter(row -> row.country == "Serbia" && row.year == 2006, pwt_data)
+montenegro_2006 = filter(row -> row.country == "Montenegro" && row.year == 2006, pwt_data)
+# Create `serb_2006` and `mont_2006` columns
+pwt_data[!, :serb_2006] .= ifelse.((pwt_data.country .== "Serbia") .&& (pwt_data.year .== 2006), pwt_data.pasture_rent, missing)
+pwt_data[!, :mont_2006] .= ifelse.((pwt_data.country .== "Montenegro") .&& (pwt_data.year .== 2006), pwt_data.pasture_rent, missing)
+# Inspecting the relevant rows
+# println(select(filter(row -> row.year == 2006, pwt_data), [:country, :year, :pasture_rent, :serb_2006, :mont_2006]))
+
+# Compute maximum values
+mserb_2006 = maximum(skipmissing(pwt_data.serb_2006))
+mmont_2006 = maximum(skipmissing(pwt_data.mont_2006))
+# Add maximum values back to the dataset
+pwt_data[!, :mserb_2006] .= mserb_2006
+pwt_data[!, :mmont_2006] .= mmont_2006
+# Inspecting to ensure values are correctly assigned
+#println(select(filter(row -> row.year == 2006, pwt_data), [:country, :year, :serb_2006, :mont_2006, :mserb_2006, :mmont_2006]))
+
+
+
+# They do:
+### gen  share_serb_2006=mserb_2006/(mserb_2006+mmont_2006) 
+### gen pq_rent_a_serb=share_serb_2006*pq_rent_a if country=="Serbia and Montenegro"
+### bys year: egen mpq_rent_a_serb=max(pq_rent_a_serb)
+### replace pq_rent_a = mpq_rent_a_serb if country=="Serbia" & year<2006	
+
+# Compute `share_serb_2006`
+share_serb_2006 = mserb_2006 / (mserb_2006 + mmont_2006)
+# Add the value as a column to the dataset
+pwt_data[!, :share_serb_2006] .= share_serb_2006
+# Create `pasture_rent_serb` column
+pwt_data[!, :pasture_rent_serb] .= ifelse.(
+    (pwt_data.country .== "Serbia and Montenegro"),
+    share_serb_2006 .* pwt_data.pasture_rent,
+    missing
+)
+
+# Compute maximum for `pasture_rent_serb` by year, handling empty groups
+mpasture_rent_serb = combine(
+    groupby(pwt_data, :year),
+    :pasture_rent_serb => (x -> maximum(skipmissing(x); init=0)) => :mpasture_rent_serb
+)
+
+# Add computed values back to the main DataFrame
+pwt_data = leftjoin(pwt_data, mpasture_rent_serb, on=:year)
+
+# Replace `pasture_rent` for Serbia for years before 2006
+pwt_data[!, :pasture_rent] .= ifelse.(
+    (pwt_data.country .== "Serbia") .&& (pwt_data.year .< 2006),
+    pwt_data.mpasture_rent_serb,
+    pwt_data.pasture_rent
+)
+
+# Inspecting relevant rows to confirm changes
+# serbia_rows = filter(row -> row.country == "Serbia" && row.year < 2006, pwt_data)
+# println(select(serbia_rows, [:country, :year, :pasture_rent, :mpasture_rent_serb]))
+# numbers check
+
+
+# They do:
+### gen  share_mont_2006=mmont_2006/(mserb_2006+mmont_2006) 
+### gen pq_rent_a_mont=share_mont_2006*pq_rent_a if country=="Serbia and Montenegro"
+### bys year: egen mpq_rent_a_mont=max(pq_rent_a_mont)
+### replace pq_rent_a = mpq_rent_a_mont if country=="Montenegro" & year<2006	
+
+# Compute `share_mont_2006`
+share_mont_2006 = mmont_2006 / (mserb_2006 + mmont_2006)
+# Add the value as a column to the dataset
+pwt_data[!, :share_mont_2006] .= share_mont_2006
+# Create `pasture_rent_mont` column
+pwt_data[!, :pasture_rent_mont] .= ifelse.(
+    (pwt_data.country .== "Serbia and Montenegro"),
+    share_mont_2006 .* pwt_data.pasture_rent,
+    missing
+)
+# Compute maximum for `pasture_rent_mont` by year, handling empty groups
+mpasture_rent_mont = combine(
+    groupby(pwt_data, :year),
+    :pasture_rent_mont => (x -> maximum(skipmissing(x); init=0)) => :mpasture_rent_mont
+)
+# Add computed values back to the main DataFrame
+pwt_data = leftjoin(pwt_data, mpasture_rent_mont, on=:year)
+# Replace `pasture_rent` for Montenegro for years before 2006
+pwt_data[!, :pasture_rent] .= ifelse.(
+    (pwt_data.country .== "Montenegro") .&& (pwt_data.year .< 2006),
+    pwt_data.mpasture_rent_mont,
+    pwt_data.pasture_rent
+)
+
+# Checking
+# serbia_rows = filter(row -> row.country == "Serbia" && row.year < 2006, pwt_data)
+# println(select(serbia_rows, [:country, :year, :pasture_rent, :mpasture_rent_serb]))
+
+
+
+# They do:
+### sort country year	
+### drop serb_2006-mpq_rent_a_mont  
+
+# Sort the dataset by country and year
+sort!(pwt_data, [:country, :year])
+# Drop intermediate columns
+select!(pwt_data, Not([:serb_2006, :mont_2006, :mserb_2006, :mmont_2006, :mpasture_rent_serb, :mpasture_rent_mont]))
+
+
+
+# Finally they do:
+### keep if year>=minyear & year<maxyear & nominal_gdp~=.	
+### g phi_NR_pasture = pasture_rent/nominal_gdp
+
+# Filter the dataset based on the conditions
+pwt_data = filter(
+        row -> row.year >= minyear && row.year < maxyear && !ismissing(row.nominal_gdp),
+        pwt_data)
+# Generate `phi_NR_pasture`
+pwt_data[!, :phi_NR_pasture] .= pwt_data.pasture_rent ./ pwt_data.nominal_gdp
+# Inspect the first 10 rows of relevant columns
+println(first(select(pwt_data, [:country, :year, :pasture_rent, :nominal_gdp, :phi_NR_pasture]), 10))
