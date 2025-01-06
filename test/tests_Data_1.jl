@@ -13,7 +13,6 @@ using StatFiles
 end
 
 @testset "Data part 1" begin
-    
     # Loading the data : 
     # This is the intermediate result gotten from the do file of the authors :
     cd(dirname(pathof(Replication_Monge_et_al_2019)))
@@ -21,8 +20,12 @@ end
     cd("data")
     true_pwt_data_1 = DataFrame(load("true_pwt_data_1.dta"))
 
+    @testset "Loading of own data - 1" begin
+        @test Replication_Monge_et_al_2019.pwt_data_1 == CSV.read("pwt_data_1.csv", DataFrame)
+    end
+
     # Testing the loading :
-    @testset "Loading data - 1 " begin
+    @testset "Loading of true data - 1 " begin
         # We sort it to have it in the same order as them : 
         sort!(true_pwt_data_1, [:country, :year])
         # This is our data : 
