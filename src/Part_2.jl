@@ -7,11 +7,10 @@ using CSV
 using Latexify
 using Plots
 using Polynomials
-using CSV
 
 # In the common.jl file, we take the sample of 76 and 79 countries used in the article and 
 # detailed in the appendix. 
-include("common.jl")
+include("country_samples.jl")
 
 ### Table 1
 
@@ -229,6 +228,7 @@ end
 The function `delete_table_1()` deletes the `pdf` file containing
 the replication result of Figure 1, if the present working directory has a folder `output` containing it.
 """
+
 function delete_table_1()
     rm("output/table_1.aux")
     rm("output/table_1.jmd")
@@ -294,11 +294,10 @@ end
 
 # ### Figure 1. Output Share of Natural Resources (Excluding Urban Land), 2000
 
-# Moving onto Figure 1:
+###################################### Moving onto Figure 1: ############################################################
 
 df_phi = DataFrame(load("src/data/MSS_NRshares.dta"))
-df_pwt = DataFrame(load("src/data/pwt80.dta"))
-replace!(df_pwt.country, "Cote d`Ivoire" => "Cote dIvoire")
+df_pwt = DataFrame(load("output/pwt_data_0.csv"))
 
 df_phi_NR = select(df_phi, :country, :year, :phi_NR)
 
@@ -330,6 +329,7 @@ trendline_panel_a = fit_panel_a[1] .+ fit_panel_a[2] .* data_fig1_a.gdp_per_work
 trendline_panel_b = fit_panel_b[1] .+ fit_panel_b[2] .* data_fig1_b.gdp_per_worker
 
 # Plotting:
+
 """
 The function `create_figure_1()` creates a `png` containing the replication result of the Figure 1.
 
@@ -373,6 +373,7 @@ function create_figure_1()
     # display(fig1_repl)
     savefig(fig1_repl, "output/figure_1.png")
 end
+
 # This is not a perfect plot, but close to what is presented in the paper. Furthermore, we have an issue with the trendline,
 # as the regression coefficient is virtually 0, I suspect this is due to how Julia computes the trendline, or further filtering
 # or normalizing has been done by the authors. Since this is not specified in the paper, we decide to leave it as it is. 
@@ -386,9 +387,9 @@ function delete_figure_1()
 end
 
 
-### Figure 2 : 
-# Now continuing with Figure 2:
+##################################################### Figure 2 : ######################################################## 
 
+# Now continuing with Figure 2:
 
 """
 The function `create_figure_2()` creates a png containing the replication result of the Figure 2.
@@ -444,7 +445,7 @@ function create_figure_2()
                 label=quartile, lw=2, linestyle=style, color=color)
     end
     
-    # display(fig2_repl)
+    display(fig2_repl)
     savefig("output/figure_2.png")
 end
 
@@ -452,11 +453,12 @@ end
 The function `delete_figure_2()` deletes the `png` file containing
 the replication result of Figure 2, if the present working directory has a folder `output` containing it.
 """
+
 function delete_figure_2()
     rm("output/figure_2.png")
 end
 
-### Figure 3 :
+############################################## Figure 3 : #####################################################################
 
 # Moving onto Figure 3:
 data_fig3 = leftjoin(df_pwt, df_phi_NR, on=[:country, :year])
@@ -483,11 +485,13 @@ CSV.write("output/data_fig3.csv", data_fig3)
 data_fig3[!, :phi_NR] = Float64.(data_fig3[!, :phi_NR]) 
 
 # Now, moving on to the plot:
+
 """
 The function `create_figure_3()` creates a `png` containing the replication result of the Figure 3.
 
 The `png` file is created within an `output` folder.
 """
+
 function create_figure_3()
     fig3_repl = scatter(data_fig3.gdp_per_worker, data_fig3.phi_NR,
         label="Using rents", color=:red, marker=:square, alpha=0.8,
@@ -499,7 +503,7 @@ function create_figure_3()
 
     plot!(data_fig3.gdp_per_worker, trendline_NR, color=:red, label="", lw=2, linestyle=:dash)
 
-    # display(fig3_repl)
+    #display(fig3_repl)
     savefig("output/figure_3.png")
 end
 
@@ -510,6 +514,7 @@ end
 The function `delete_figure_3()` deletes the `png` file containing
 the replication result of Figure 3, if the present working directory has a folder `output` containing it.
 """
+
 function delete_figure_3()
     rm("output/figure_3.png")
 end

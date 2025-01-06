@@ -16,15 +16,14 @@ using PrettyTables
 using Weave
 
 # We are going to use the array benchmark_76 of the common file.
-include("common.jl")
+include("country_samples.jl")
 
 ### Figure 4 
 
 # First, I merge the pwt data with the author's calculated NRR shares.
 
 df_phi = DataFrame(load("src/data/MSS_NRshares.dta"))
-df_pwt = DataFrame(load("src/data/pwt80.dta"))
-replace!(df_pwt.country, "Cote d`Ivoire" => "Cote dIvoire")
+df_pwt = DataFrame(load("output/pwt_data_0.csv"))
 
 # Selecting the total phiNR variable:
 
@@ -261,6 +260,28 @@ end
 
 years_of_interest = [1970, 1980, 1990, 2000]
 data_tab3 = filter(row -> row.year in years_of_interest, data_tab3)
+
+CSV.write("output/table3_repl.csv", data_tab3)
+
+# Function to create and save the HTML table
+
+#function create_table_3(tab3_csv_path::String, tab3_html_path::String)
+#
+#    data = CSV.read(tab3_csv_path, DataFrame)
+#    html_table = pretty_table(data; backend = Val(:html), standalone = true)
+#    
+#    # Save the HTML table to a file
+#    open(tab3_html_path, "w") do file
+#        write(file, html_table)
+#    end
+#
+#    println("HTML table saved to $output_html_path")
+#end
+
+#tab3_csv = "output/table3_repl.csv"  
+#tab3_html = "output/table3_repl.html"  
+#create_table_3(tab3_csv, tab3_html)
+
 # Rounding : 
 rounded_data_tab_3 = round.(data_tab3, digits=3)
 
@@ -414,7 +435,9 @@ function create_year_bins(year)
 end
 
 data_tab4and5.year_bin = map(create_year_bins, data_tab4and5.year)
+
 # Grouped by SW indicator
+
 grouped_tab4 = groupby(data_tab4and5, [:year_bin, :open]) 
 
 stats_tab4 = combine(grouped_tab4, 
