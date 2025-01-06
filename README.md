@@ -8,6 +8,8 @@
 
 This repository is dedicated to the replication of the article _Natural Resources and Global Misallocation_ by Monge et al, 2019, in Julia. 
 
+The article is : Monge-Naranjo, Alexander, Juan M. Sánchez, and Raül Santaeulàlia-Llopis. “Natural Resources and Global Misallocation.” American Economic Journal: Macroeconomics 11, no. 2 (2019): 79–126. https://www.jstor.org/stable/26621311.
+
 We are COMPÉRAT Étienne, CHAMBON Lionel, and GUGELMO CAVALHEIRO DIAS Paulo, and this replication package is done for the *Computational Economics* Class, taught by Florian Oswald during the Fall 2024 semester in the Sciences Po Master of Research in Economics. 
 
 You can go to its dedicated webpage [here](https://www.paulogcd.com/Replication_Monge_et_al_2019.jl/) to have a better overview of the package. 
@@ -43,6 +45,10 @@ We also managed to partially reproduce different figures and tables, namely :
 - Table 4
 - Table 5
 
+We choose not to include the Figure 2, due to it being a statistic description of data of another paper.
+
+All of the obtained figures and tables are described and discussed in the package website.
+
 # Tests procedure and results 
 
 We used the `Test` package to test the quality of the replicated data, and compare it with the data from the Replication package. 
@@ -52,7 +58,7 @@ Once we are in the folder of the repository, we can run the replication tests.
 
 When running,
 
-````
+```
 Pkg.test()
 ```
 
