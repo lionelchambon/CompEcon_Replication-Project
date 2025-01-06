@@ -19,7 +19,7 @@ You can go to its dedicated webpage [here](https://www.paulogcd.com/Replication_
 ```
 using Pkg
 Pkg.activate(".")
-Pkg.add(url = "https://github.com/Paulogcd/Replication_Monge_et_al_2019_backup.jl")
+Pkg.add(url = "https://github.com/Paulogcd/Replication_Monge_et_al_2019.jl")
 using Replication_Monge_et_al_2019 # The precompilation might ake some time (24 seconds on Mac M1)
 
 # to get all the results inside a 'output' folder : 
