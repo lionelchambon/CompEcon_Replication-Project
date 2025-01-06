@@ -7,6 +7,7 @@ using CSV
 using Latexify
 using Plots
 using Polynomials
+using Base
 
 # In the common.jl file, we take the sample of 76 and 79 countries used in the article and 
 # detailed in the appendix. 
@@ -160,9 +161,9 @@ Table_1 = DataFrame(
 push!(Table_1, Observationsrow)
 
 # Then, we should save this Table 1 in the 'output' folder. 
-
-CSV.write("output/table_1.csv", Table_1)
-
+if isfile("output/table_1.csv") == false
+    CSV.write("output/table_1.csv", Table_1)
+end
 rounded_data_tab_1 = copy(Table_1)
 rounded_data_tab_1[:,2:5] = round.(Table_1[:,2:5], digits = 2)
 # rounded_data_tab_1
@@ -211,6 +212,8 @@ The `pdf` file is created within an `output` folder.
 
 """
 function create_table_1()
+    cd(dirname(pathof(Replication_Monge_et_al_2019)))
+    cd("..")
     write("output/table_1.jmd", """
 ---
 title: "Table 1"
@@ -234,6 +237,7 @@ Replication_Monge_et_al_2019.rounded_data_tab_1
 ```
 
 """)
+
     weave("output/table_1.jmd"; doctype = "md2pdf", out_path = "output")
 end
 
@@ -241,15 +245,15 @@ end
 The function `delete_table_1()` deletes the `pdf` file containing
 the replication result of Figure 1, if the present working directory has a folder `output` containing it.
 """
-
 function delete_table_1()
+    cd(dirname(pathof(Replication_Monge_et_al_2019)))
+    cd("..")
     rm("output/table_1.aux")
     rm("output/table_1.jmd")
     rm("output/table_1.log")
     rm("output/table_1.out")
     rm("output/table_1.pdf")
     rm("output/table_1.tex")
-
 end
 
 # create_table_1()
@@ -384,6 +388,8 @@ function create_figure_1()
 
     fig1_repl = plot(plot_a, plot_b, layout=(1, 2), size=(1000, 500))
     # display(fig1_repl)
+    cd(dirname(pathof(Replication_Monge_et_al_2019)))
+    cd("..")
     savefig(fig1_repl, "output/figure_1.png")
 end
 
@@ -396,6 +402,8 @@ The function `delete_figure_1()` deletes the `pdf` file containing
 the replication result of Figure 1, if the present working directory has a folder `output` containing it.
 """
 function delete_figure_1()
+    cd(dirname(pathof(Replication_Monge_et_al_2019)))
+    cd("..")
     rm("output/figure_1.png")
 end
 
@@ -458,7 +466,9 @@ function create_figure_2()
                 label=quartile, lw=2, linestyle=style, color=color)
     end
     
-    display(fig2_repl)
+    # display(fig2_repl)
+    cd(dirname(pathof(Replication_Monge_et_al_2019)))
+    cd("..")
     savefig("output/figure_2.png")
 end
 
@@ -466,8 +476,9 @@ end
 The function `delete_figure_2()` deletes the `png` file containing
 the replication result of Figure 2, if the present working directory has a folder `output` containing it.
 """
-
 function delete_figure_2()
+    cd(dirname(pathof(Replication_Monge_et_al_2019)))
+    cd("..")
     rm("output/figure_2.png")
 end
 
@@ -488,7 +499,10 @@ data_fig3 = filter(row -> !ismissing(row.labsh), data_fig3)
 data_fig3[:, :workers] = data_fig3.pop .* (1 .- data_fig3.labsh)
 data_fig3[:, :gdp_per_worker] = data_fig3.cgdpo ./ data_fig3.workers
 
-CSV.write("output/data_fig3.csv", data_fig3)
+if isfile("output/data_fig3.csv") == false
+    CSV.write("output/data_fig3.csv", data_fig3)
+end
+
 
 # While we can compute ϕ manually following Equation (13) to compare to the CF paper, we cannot compute the NR output share
 # as we are not provided with CFs numbers.
@@ -517,6 +531,8 @@ function create_figure_3()
     plot!(data_fig3.gdp_per_worker, trendline_NR, color=:red, label="", lw=2, linestyle=:dash)
 
     #display(fig3_repl)
+    cd(dirname(pathof(Replication_Monge_et_al_2019)))
+    cd("..")
     savefig("output/figure_3.png")
 end
 
@@ -529,5 +545,7 @@ the replication result of Figure 3, if the present working directory has a folde
 """
 
 function delete_figure_3()
+    cd(dirname(pathof(Replication_Monge_et_al_2019)))
+    cd("..")
     rm("output/figure_3.png")
 end

@@ -25,11 +25,12 @@ using Missings
 using CSV
 using Statistics
 
+cd(dirname(Base.source_path()))
 # Load the dataset of the Penn World Tables (pwt) :
 # cd(dirname(pathof(Replication_Monge_et_al_2019)))
 # splitdir(pwd())[2]
-# cd("data")
-pwt_data = DataFrame(load("src/data/pwt80.dta"))
+cd("data")
+pwt_data = DataFrame(load("pwt80.dta"))
 # We save the dimensions for later checks : 
 initial_size = size(pwt_data)
 # We will regularly proceed to Dimension Checks, referred as "DC".
@@ -149,7 +150,13 @@ maxyear = 2010
 pwt_data[!, :country] .= replace.(pwt_data.country, "Cote d`Ivoire" => "Cote dIvoire")
 
 pwt_data_0 = copy(pwt_data)
-CSV.write("output/pwt_data_0.csv", pwt_data_0)
+cd(dirname(Base.source_path()))
+cd("..")
+cd("output")
+if isfile("pwt_data_0.csv") == false
+    CSV.write("pwt_data_0.csv", pwt_data_0)
+end
+
 
 # ###############################################
 # # (1) Merge with timber_and_subsoil_rents.dta #
@@ -165,6 +172,8 @@ CSV.write("output/pwt_data_0.csv", pwt_data_0)
 sort!(pwt_data, [:country, :year])
 
 # We load the .dta file
+cd(dirname(Base.source_path()))
+cd("..")
 timber_data = DataFrame(load("src/data/timber_and_subsoil_rent_input.dta")) 
 # We merge with the main DataFrame
 pwt_data = outerjoin(pwt_data, timber_data, on=[:country, :year], makeunique=true) 
@@ -307,7 +316,13 @@ select(montenegro_data, relevant_columns) #the numbers match
 pwt_data_1 = copy(pwt_data)
 
 # Save DataFrame to a CSV file
-CSV.write("output/pwt_data_1.csv", pwt_data_1)
+cd(dirname(Base.source_path()))
+cd("..")
+cd("output")
+if isfile("pwt_data_1.csv") == false
+    CSV.write("pwt_data_1.csv", pwt_data_1)
+end
+
 
 # Check : 
 # a = CSV.read("output/pwt_data_1.csv", DataFrame)
@@ -325,6 +340,9 @@ CSV.write("output/pwt_data_1.csv", pwt_data_1)
 ### ######################################
 
 # Load crop_land_rent_input.dta
+
+cd(dirname(Base.source_path()))
+cd("..")
 crop_data = DataFrame(load("src/data/crop_land_rent_input.dta"))
 # Add marker columns
 pwt_data[!, :origin] .= "pwt_data"
@@ -844,8 +862,12 @@ select!(pwt_data, Not(:_merge))
 
 # Saving it : 
 pwt_data_2 = copy(pwt_data)
-CSV.write("output/pwt_data_2.csv", pwt_data_2)
-
+cd(dirname(Base.source_path()))
+cd("..")
+cd("output")
+if isfile("pwt_data_2.csv") == false
+    CSV.write("pwt_data_2.csv", pwt_data_2)
+end
 
 
 
@@ -864,6 +886,8 @@ CSV.write("output/pwt_data_2.csv", pwt_data_2)
 ### keep if year>=minyear & year<maxyear 	
 
 # Load the pasture rent data
+cd(dirname(Base.source_path()))
+cd("..")
 pasture_data = DataFrame(load("src/data/pasture_land_rent_input.dta"))
 
 # Merge with the main DataFrame
@@ -1305,7 +1329,12 @@ select!(pwt_data, Not(:_merge))
 
 # Saving it : 
 pwt_data_3 = copy(pwt_data)
-CSV.write("output/pwt_data_3.csv", pwt_data_3)
+cd(dirname(Base.source_path()))
+cd("..")
+if isfile("output/pwt_data_3.csv") == false
+    CSV.write("output/pwt_data_3.csv", pwt_data_3)
+end
+
 
 
 
@@ -1565,4 +1594,9 @@ pwt_data = select(pwt_data, columns_to_keep)
 
 
 #Save DataFrame to a CSV file
-CSV.write("pwt_data.csv", pwt_data)
+
+cd(dirname(Base.source_path()))
+cd("..")
+if isfile("pwt_data.csv") == false
+    CSV.write("pwt_data.csv", pwt_data)
+end

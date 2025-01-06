@@ -19,7 +19,8 @@ You can go to its dedicated webpage [here](https://www.paulogcd.com/Replication_
 ```
 using Pkg
 Pkg.activate(".")
-using Replicaion_Monge_et_al_2019.jl # The precompilation might ake some time (24 seconds on Mac M1)
+Pkg.add(url = "https://github.com/Paulogcd/Replication_Monge_et_al_2019_backup.jl")
+using Replication_Monge_et_al_2019 # The precompilation might ake some time (24 seconds on Mac M1)
 
 # to get all the results inside a 'output' folder : 
 run()
@@ -59,7 +60,7 @@ Once we are in the folder of the repository, we can run the replication tests.
 When running,
 
 ```
-Pkg.test()
+Pkg.test("Replication_Monge_et_al_2019")
 ```
 
 We obtain : 
@@ -69,7 +70,7 @@ We obtain :
 And when running 
 
 ```
-include("Replication_Monge_et_al_2019.extensive_test")
+extensive_tests()
 ```
 
 We obtain : 

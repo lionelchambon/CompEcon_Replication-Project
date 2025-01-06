@@ -38,8 +38,11 @@ data_fig4 = leftjoin(df_pwt, df_phi_NR, on=[:country, :year])
 # this is not explicitly mentioned in the paper.
 
 data_fig4 = filter(row -> row.country in benchmark_76 && (1970 <= row.year <= 2005), data_fig4)
-
-CSV.write("output/data_fig4.csv", data_fig4)
+cd(dirname(pathof(Replication_Monge_et_al_2019)))
+cd("..")
+if isfile("output/data_fig4.csv") == false
+    CSV.write("output/data_fig4.csv", data_fig4)
+end
 
 # Testing that we obtain the correct number of years and countries:
 
@@ -168,6 +171,8 @@ The function `create_figure_4()` creates a `png` containing the replication resu
 The `png` file is created within an `output` folder.
 """
 function create_figure_4()
+    cd(dirname(pathof(Replication_Monge_et_al_2019)))
+    cd("..")
     fig4_repl = plot(plot_qmpk,
                         plot_vmpk,
                         layout=(1, 2),
@@ -180,6 +185,8 @@ The function `delete_figure_4()` deletes the `png` file containing
 the replication result of Figure 4, if the present working directory has a folder `output` containing it.
 """
 function delete_figure_4()
+    cd(dirname(pathof(Replication_Monge_et_al_2019)))
+    cd("..")
     rm("output/figure_4.png")
 end
 
@@ -260,8 +267,12 @@ end
 
 years_of_interest = [1970, 1980, 1990, 2000]
 data_tab3 = filter(row -> row.year in years_of_interest, data_tab3)
+cd(dirname(pathof(Replication_Monge_et_al_2019)))
+cd("..")
+if isfile("output/table3_repl.csv") == false
+    CSV.write("output/table3_repl.csv", data_tab3)
+end
 
-CSV.write("output/table3_repl.csv", data_tab3)
 
 # Function to create and save the HTML table
 
@@ -326,7 +337,8 @@ The `pdf` file is created within an `output` folder.
 
 """
 function create_table_3()
-
+    cd(dirname(pathof(Replication_Monge_et_al_2019)))
+    cd("..")
     write("output/table_3.jmd", """
 ---
 title: "Table 3"
@@ -360,6 +372,8 @@ The function `delete_table_3()` deletes the `pdf` file and oher building blocks 
 the replication result of Table 3, if the present working directory has a folder `output` containing it.
 """
 function delete_table_3()
+    cd(dirname(pathof(Replication_Monge_et_al_2019)))
+    cd("..")
     rm("output/table_3.aux")
     rm("output/table_3.jmd")
     rm("output/table_3.log")
@@ -390,8 +404,10 @@ data_tab4and5 = leftjoin(data_fig4, df_open, on=[:country, :year])
 
 # Finally:
 
-CSV.write("output/data_tab4and5.csv", data_tab4and5)
 
+if isfile("output/data_tab4and5.csv") == false
+    CSV.write("output/data_tab4and5.csv", data_tab4and5)
+end
 # Checking:
 
 num_countries_bis = length(unique(data_tab4and5.country))
@@ -492,7 +508,9 @@ desired_order = [:QMPK_open, :QMPK_closed, :QMPK_t_stat, :VMPK_open, :VMPK_close
 tab4_repl = select(tab4, desired_order...)
 
 # println(tab4_repl)
-CSV.write("output/table4_repl.csv", tab4_repl)
+if isfile("output/table4_repl.csv") == false
+    CSV.write("output/table4_repl.csv", tab4_repl)
+end
 
 # Here, we should have : 
 rounded_data_tab_4 = round.(tab4_repl, digits=3)
@@ -516,6 +534,8 @@ The `pdf` file is created within an `output` folder.
 
 """
 function create_table_4()
+    cd(dirname(pathof(Replication_Monge_et_al_2019)))
+    cd("..")
     write("output/table_4.jmd", """
 ---
 title: "Table 4"
@@ -548,6 +568,8 @@ The function `delete_table_4()` deletes the `pdf` file and oher building blocks 
 the replication result of Table 4, if the present working directory has a folder `output` containing it.
 """
 function delete_table_4()
+    cd(dirname(pathof(Replication_Monge_et_al_2019)))
+    cd("..")
     rm("output/table_4.aux")
     rm("output/table_4.jmd")
     rm("output/table_4.log")
@@ -625,8 +647,10 @@ rename!(tab5_repl, Dict(
     :P_Y_div_P_K_Open => "P_Y/P_K (Open)", :P_Y_div_P_K_Closed => "P_Y/P_K (Closed)", :P_Y_div_P_K_t_stat => "P_Y/P_K t-stat"
 ))
 
-println(tab5_repl)
-CSV.write("output/table5_repl.csv", tab5_repl)
+# println(tab5_repl)
+if isfile("output/table5_repl.csv") == false
+    CSV.write("output/table5_repl.csv", tab5_repl)
+end
 
 # Rounding : 
 rounded_data_5 = copy(tab5_repl)
@@ -648,6 +672,8 @@ The `pdf` file is created within an `output` folder.
 
 """
 function create_table_5()
+    cd(dirname(pathof(Replication_Monge_et_al_2019)))
+    cd("..")
     write("output/table_5.jmd", """
 ---
 title: "Table 5"
@@ -679,6 +705,8 @@ The function `delete_table_5()` deletes the `pdf` file and oher building blocks 
 the replication result of Table 5, if the present working directory has a folder `output` containing it.
 """
 function delete_table_5()
+    cd(dirname(pathof(Replication_Monge_et_al_2019)))
+    cd("..")
     rm("output/table_5.aux")
     rm("output/table_5.jmd")
     rm("output/table_5.log")

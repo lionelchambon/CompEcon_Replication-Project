@@ -88,4 +88,12 @@ module Replication_Monge_et_al_2019
     export create_table_5
     export delete_table_5
 
+    function extensive_tests()
+        cd(dirname(pathof(Replication_Monge_et_al_2019)))
+        cd("..")
+        include("test/extensive_tests.jl")
+    end
+
+    export extensive_tests
+
 end

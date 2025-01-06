@@ -91,7 +91,7 @@ Once we are in the folder of the repository, we can run the replication tests.
 When running,
 
 ```
-Pkg.test()
+Pkg.test("Replication_Monge_et_al_2019")
 ```
 
 We obtain : 
@@ -101,7 +101,7 @@ We obtain :
 And when running 
 
 ```
-include("Replication_Monge_et_al_2019.extensive_test")
+extensive_tests()
 ```
 
 We obtain : 
