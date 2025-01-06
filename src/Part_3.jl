@@ -667,7 +667,7 @@ using Latexify
 ```
 
 ```{julia}
-Replication_Monge_et_al_2019.rounded_data_
+Replication_Monge_et_al_2019.rounded_data_5
 ```
 
 """)

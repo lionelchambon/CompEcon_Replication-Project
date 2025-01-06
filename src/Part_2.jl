@@ -166,6 +166,18 @@ CSV.write("output/table_1.csv", Table_1)
 rounded_data_tab_1 = copy(Table_1)
 rounded_data_tab_1[:,2:5] = round.(Table_1[:,2:5], digits = 2)
 # rounded_data_tab_1
+# We change the first column for presentation convenience : 
+rounded_data_tab_1[:,1] = [ "NR",
+                            "Timb.",
+                            "Subs.",
+                            "Oil",
+                            "Gas",
+                            "Other",
+                            "Crop",
+                            "Past.",
+                            "NRUL",
+                            "Obs"]
+rounded_data_tab_1
 
 """
 The function `create_table_1()` creates a `pdf` containing the replication result of the Figure 2.

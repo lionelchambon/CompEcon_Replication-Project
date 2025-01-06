@@ -12,6 +12,9 @@ end
 
 @testset "Results Part 2" begin
     @test 1 == 1
+
+    # The test that the figuures and tables of Part 2 are done in the comments of the website by the replicators. 
+
     # Testing that we get the same Table 1 : (in progress)
     # The values obtained by the authors are : 
     # true_variables = ["Natural resources", "Timber", "Subsoil", "Oil", "Gas", "Other", "Cropland", "Pasterland", "Natural resources with urban land", "Observations"]
@@ -27,4 +30,6 @@ end
     
     # Ideally, the test would look like : 
     # @test isequal(true_table_1, Replication_Monge_et_al_2019.table_1)
+
+
 end
