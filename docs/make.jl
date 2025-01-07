@@ -20,5 +20,5 @@ makedocs(;
 
 deploydocs(;
     repo="https://www.paulogcd.com/Replication_Monge_et_al_2019.jl/dev/",
-    devbranch="main",
+    devbranch="main", 
 )
