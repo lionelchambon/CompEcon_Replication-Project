@@ -6,11 +6,11 @@
 [![Coverage](https://codecov.io/gh/Paulogcd/Replication_Monge_et_al_2019.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/Paulogcd/Replication_Monge_et_al_2019.jl)
 
 
-This repository is dedicated to the replication of the article _Natural Resources and Global Misallocation_ by Monge et al, 2019, in Julia. 
+This repository is dedicated to our replication project in the scope of [Florian Oswald's](https://www.floswald.github.io) _Computational Economics_ course in 2025 at Sciences Po. We are [Lionel Chambon](https://lionelchambon.github.io), [Etienne Compérat](https://ecomperat.github.io), and [Paulo Gugelmo Cavalheiro Dias](https://www.paulogcd.com). 
 
-The article is : Monge-Naranjo, Alexander, Juan M. Sánchez, and Raül Santaeulàlia-Llopis. “Natural Resources and Global Misallocation.” American Economic Journal: Macroeconomics 11, no. 2 (2019): 79–126. https://www.jstor.org/stable/26621311.
+We replicated: Monge-Naranjo, Alexander, Juan M. Sánchez, and Raül Santaeulàlia-Llopis. “Natural Resources and Global Misallocation.” American Economic Journal: Macroeconomics 11, no. 2 (2019): 79–126. https://www.jstor.org/stable/26621311.
 
-We are COMPÉRAT Étienne, CHAMBON Lionel, and GUGELMO CAVALHEIRO DIAS Paulo, and this replication package is done for the *Computational Economics* Class, taught by Florian Oswald during the Fall 2024 semester in the Sciences Po Master of Research in Economics. 
+While the original replication files are coded in Stata, we completed the assignment in Julia.
 
 You can go to its dedicated webpage [here](https://www.paulogcd.com/Replication_Monge_et_al_2019.jl/) to have a better overview of the package. 
 
